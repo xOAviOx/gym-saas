@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key-not-used-for-static-checks
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+jobs:
+  checks:
+    name: Lint, typecheck, unit tests, audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm audit --audit-level=high
+
+  database:
+    name: Migrations and RLS isolation tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: pnpm install --frozen-lockfile
+      - name: Start local Supabase (applies migrations)
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,realtime
+      - name: Export local keys
+        run: supabase status -o env --override-name api.url=NEXT_PUBLIC_SUPABASE_URL --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY >> "$GITHUB_ENV"
+      - name: Generated types are up to date
+        run: |
+          supabase gen types typescript --local --schema public > /tmp/database.types.ts
+          diff -q /tmp/database.types.ts lib/supabase/database.types.ts
+      - run: pnpm test:rls

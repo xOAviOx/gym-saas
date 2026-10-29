@@ -1,0 +1,8 @@
+# Marks this directory as the pnpm workspace root so pnpm never walks up to a parent folder.
+# Packages with install scripts that this project needs to run.
+allowBuilds:
+  supabase: true
+  esbuild: true
+  '@tailwindcss/oxide': true
+  sharp: true
+  unrs-resolver: true

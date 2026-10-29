@@ -1,0 +1,31 @@
+# dependencies
+node_modules
+
+# next.js
+.next
+out
+build
+next-env.d.ts
+*.tsbuildinfo
+
+# env
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel
+
+# supabase local
+supabase/.temp
+supabase/.branches
+
+# tests
+coverage
+playwright-report
+test-results
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
