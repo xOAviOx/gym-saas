@@ -11,7 +11,7 @@
 
 ## Database
 
-- Postgres with row-level security on every table. The base policy is `org_id in (select my_org_ids())`; privileged tables (expenses, organization settings) further require owner or manager; payments can be inserted by every role but never updated or deleted; invoices, invoice_items, payment_claims, team_members and audit_logs have no direct write policies and change only through SQL functions.
+- Postgres with row-level security on every table. The base policy is `org_id in (select my_org_ids())`; privileged tables (expenses, organization settings) further require owner or manager. Invoices, invoice_items, payments, payment_claims, collection_requests, organization_secrets, team_members and audit_logs have no direct write policies and change only through SQL functions. Payments are never updated or deleted; a trigger allows only clearing `collected_by` when a team member is removed. Organization secrets are readable by owners and managers only.
 - Multi-step writes (create gym, create membership, record payment, confirm claim, check-in, …) are `security definer` functions. Each checks the caller's role with `assert_org_role`, performs the whole change in one transaction and writes its own audit row.
 - Member, plan and membership writes have no direct authenticated insert/update policies. `create_member`, `update_member`, `save_plan`, `enroll_member` and the lifecycle/import RPCs are the audited write paths. `create_member` and enrollment use request UUIDs for safe retries; member creation, its optional membership, its invoice and its audit rows commit or roll back together.
 - The `member_directory` view is `security_invoker`, so RLS applies to its members, memberships, plans and invoices. `list_members` scopes the gym, validates filters and paging, searches literal substrings, and orders dues/expiry first. Its overview counts and balance are computed over the same search matches before the selected status filter and pagination. Live totals exclude deleted records; deleted counts, browsing and restore require owner or manager.
@@ -21,12 +21,12 @@
 
 ## Supabase clients
 
-| Client                   | Where                                                                                    | Key                                 |
-| ------------------------ | ---------------------------------------------------------------------------------------- | ----------------------------------- |
-| `lib/supabase/server.ts` | Server Components and Server Actions                                                     | anon + cookie session (RLS applies) |
-| `lib/supabase/client.ts` | Client Components (auth UI only)                                                         | anon                                |
-| `lib/supabase/proxy.ts`  | `proxy.ts`                                                                               | anon                                |
-| `lib/supabase/admin.ts`  | webhooks, cron, portal routes after token validation, invite acceptance, kiosk PIN check | service role                        |
+| Client                   | Where                                                                                                                                 | Key                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `lib/supabase/server.ts` | Server Components and Server Actions                                                                                                  | anon + cookie session (RLS applies) |
+| `lib/supabase/client.ts` | Client Components (auth UI only)                                                                                                      | anon                                |
+| `lib/supabase/proxy.ts`  | `proxy.ts`                                                                                                                            | anon                                |
+| `lib/supabase/admin.ts`  | webhooks, cron, portal and pay-link routes after token validation, Cashfree credential decryption, invite acceptance, kiosk PIN check | service role                        |
 
 The service role key never reaches a page or a client bundle.
 
@@ -42,6 +42,14 @@ Directory actions use the existing audited enrollment flow, not a second mutatio
 
 Recent activity combines recorded member creation, membership creation, payments/reversals and the profile's 90-day check-in window. Events sort by their actual timestamp and display the six most recent entries in IST. This is a compact activity feed, not a complete audit log.
 
+## Billing and payments
+
+- Membership RPCs create the invoices. GST is inclusive: `lib/gst.ts` splits the total into taxable value and CGST/SGST at half the gym's rate each, in paise. Invoice numbers are sequential per gym and financial year (`<PREFIX>/26-27/0001`) and are never reused. Invoices are voided with a reason, never deleted, and only when no net payment remains.
+- `record_payment` takes a request UUID, so a retried submit returns the first payment. It refuses amounts above the balance, accepts a UTR only for UPI (exactly 12 digits) and rejects a UTR already used in the gym. A reversal adds a negative payment linked to the original. Recording a payment, confirming a claim or voiding the invoice cancels its open Cashfree link, because the link amount would no longer match the balance.
+- Pay links (`/p/pay/<token>`) carry an HMAC-SHA256 token signed with a key derived from `PORTAL_TOKEN_SECRET`, bound to one invoice and valid for 30 days. After verifying the token, the page and its PDF route read only that invoice through the service role. Claim, checkout and status requests are rate-limited per client. Members submit UPI claims through `submit_payment_claim`, which only the service role can call, at most three per invoice per IST day. Staff confirm a claim (which records a UPI payment) or reject it with a reason.
+- Cashfree keys are checked with Cashfree before `save_cashfree_credentials` stores them. The secret key is encrypted with AES-256-GCM using `SECRETS_ENCRYPTION_KEY` and never appears in audit rows. An invoice has at most one live Cashfree link. Webhooks at `/api/webhooks/cashfree` are verified with the gym's secret (base64 HMAC-SHA256 of timestamp + raw body) and logged in `gateway_events`. The payment itself is always re-read from the Cashfree API before `record_gateway_payment` (service role only, idempotent per Cashfree payment id) records it. **Check payment status** on an invoice runs the same reconciliation.
+- PDFs are generated on the server with `pdf-lib` (`lib/pdf/invoice-pdf.ts`): a one-page tax invoice when GST is enabled, otherwise a receipt, and a void document for voided invoices.
+
 ## Text and formatting
 
 All user-facing strings live in `lib/copy.ts`. Money is formatted with `Intl` for `en-IN` (`₹1,25,000`), dates as `12 Mar 2026`, relative dates as `3 days left` / `5 days overdue`.
@@ -50,4 +58,4 @@ Use `FormItem hasDescription` when a field renders `FormDescription`. Controls t
 
 ## Security headers
 
-`next.config.ts` sets a Content-Security-Policy, HSTS with preload, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` and a Permissions-Policy that allows the camera only for the QR scanner.
+`next.config.ts` sets a Content-Security-Policy, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` and a Permissions-Policy that allows the camera only for the QR scanner. HSTS with preload and the `upgrade-insecure-requests` directive are sent only in production builds whose `NEXT_PUBLIC_APP_URL` is HTTPS, so a local `pnpm start` over HTTP keeps working.

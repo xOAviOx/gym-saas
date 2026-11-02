@@ -232,14 +232,25 @@ export default async function MemberPage({
           ) : (
             <ul className="grid gap-3">
               {activity.invoices.map((invoice) => (
-                <li key={invoice.id} className="flex justify-between gap-3 text-sm">
-                  <div>
-                    <p className="font-medium">{invoice.number}</p>
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      {relativeDueDate(invoice.dueDate, today).label}
-                    </p>
-                  </div>
-                  <span className="tabular">{formatMoney(invoice.balanceDue)}</span>
+                <li key={invoice.id}>
+                  <Link
+                    href={`/invoices/${invoice.id}`}
+                    aria-label={copy.dues.openFor(invoice.number, member.full_name)}
+                    className="hover:bg-muted/40 focus-visible:ring-ring/40 -mx-2 flex min-h-11 items-center justify-between gap-3 rounded-lg px-2 py-2 text-sm outline-none focus-visible:ring-3"
+                  >
+                    <div>
+                      <p className="font-medium">{invoice.number}</p>
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {relativeDueDate(invoice.dueDate, today).label}
+                      </p>
+                    </div>
+                    <span className="tabular flex items-center gap-2">
+                      {formatMoney(invoice.balanceDue)}
+                      <span aria-hidden="true" className="text-muted-foreground">
+                        →
+                      </span>
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -295,7 +306,13 @@ export default async function MemberPage({
                       {p.isReversal ? ` · ${copy.members.reversal}` : ''}
                     </p>
                     <p className="text-muted-foreground mt-1 text-xs">
-                      {p.invoiceNumber} · {formatDateTime(p.paidAt)}
+                      <Link
+                        href={`/invoices/${p.invoiceId}`}
+                        className="text-primary underline-offset-4 hover:underline"
+                      >
+                        {p.invoiceNumber}
+                      </Link>
+                      {` · ${formatDateTime(p.paidAt)}`}
                     </p>
                     {p.reference ? (
                       <p className="text-muted-foreground mt-1 text-xs break-all">

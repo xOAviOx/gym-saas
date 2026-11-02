@@ -97,6 +97,9 @@ export function toActionError(error: unknown): ActionError {
       if (/invoices_org_id_invoice_number_key/.test(message)) {
         return new ActionError(copy.errors.db.duplicate_invoice_number, 'conflict');
       }
+      if (/collection_requests_one_open/.test(message)) {
+        return new ActionError(copy.errors.db.gateway_link_open!, 'conflict');
+      }
       return new ActionError(copy.errors.conflict, 'conflict');
     }
     if (code === 'PGRST116') {

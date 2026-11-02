@@ -32,6 +32,10 @@ export default async function TodayPage() {
           label={copy.today.tiles.pendingDues}
           value={<Money paise={stats.pendingDues} />}
           tone={stats.pendingDues > 0 ? 'danger' : 'default'}
+          hint={
+            stats.pendingDuesCount > 0 ? copy.today.invoices(stats.pendingDuesCount) : undefined
+          }
+          href="/dues"
         />
         <StatTile
           label={copy.today.tiles.expiringSoon}

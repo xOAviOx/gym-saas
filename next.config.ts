@@ -2,6 +2,9 @@ import type { NextConfig } from 'next';
 import path from 'node:path';
 
 const isDev = process.env.NODE_ENV !== 'production';
+// A production build served over plain http (a local `next start`) must not ask the
+// browser to upgrade requests: same-origin navigations and Supabase calls would fail.
+const servedOverHttps = !isDev && (process.env.NEXT_PUBLIC_APP_URL ?? '').startsWith('https://');
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabase = supabaseUrl ? new URL(supabaseUrl) : null;
@@ -23,12 +26,14 @@ const contentSecurityPolicy = [
   "media-src 'self' blob:",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
-  ...(isDev ? [] : ['upgrade-insecure-requests']),
+  ...(servedOverHttps ? ['upgrade-insecure-requests'] : []),
 ].join('; ');
 
 const securityHeaders = [
   { key: 'Content-Security-Policy', value: contentSecurityPolicy },
-  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  ...(servedOverHttps
+    ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' }]
+    : []),
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },

@@ -2,7 +2,7 @@
   "name": "gymdesk",
   "version": "0.1.0",
   "private": true,
-  "description": "India-first gym management: members, fees via direct UPI or Razorpay, WhatsApp reminders, QR attendance.",
+  "description": "India-first gym management: members, GST invoices, fees via direct UPI or Cashfree, WhatsApp reminders, QR attendance.",
   "packageManager": "pnpm@11.6.0",
   "engines": {
     "node": ">=22"
@@ -36,6 +36,8 @@
     "date-fns-tz": "^3.2.0",
     "lucide-react": "^1.63.0",
     "next": "^16.4.3",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.4",
     "radix-ui": "^1.8.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -50,6 +52,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.6",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "eslint": "^10.13.0",

@@ -44,5 +44,6 @@ export type MemberPayment = {
   method: Tables<'payments'>['method'];
   reference: string | null;
   isReversal: boolean;
+  invoiceId: string;
   invoiceNumber: string;
 };

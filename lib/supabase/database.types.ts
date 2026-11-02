@@ -71,14 +71,14 @@ isOneToOne: false
                   ]
                 },"collection_requests": {
                   Row: {
-                    "amount": number,"confirmed_payment_id": string | null,"created_at": string,"created_by": string | null,"expires_at": string,"id": string,"invoice_id": string,"member_id": string,"org_id": string,"provider": Database["public"]['Enums']["collection_provider"],"provider_link_id": string | null,"short_url": string | null,"status": Database["public"]['Enums']["collection_request_status"],"updated_at": string,"upi_uri": string | null
+                    "amount": number,"confirmed_payment_id": string | null,"created_at": string,"created_by": string | null,"expires_at": string,"id": string,"invoice_id": string,"member_id": string,"org_id": string,"provider": Database["public"]['Enums']["collection_provider"],"provider_link_id": string | null,"request_id": string | null,"short_url": string | null,"status": Database["public"]['Enums']["collection_request_status"],"updated_at": string,"upi_uri": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount": number,"confirmed_payment_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"expires_at": string,"id"?: string,"invoice_id": string,"member_id": string,"org_id": string,"provider": Database["public"]['Enums']["collection_provider"],"provider_link_id"?: string | null,"short_url"?: string | null,"status"?: Database["public"]['Enums']["collection_request_status"],"updated_at"?: string,"upi_uri"?: string | null
+                    "amount": number,"confirmed_payment_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"expires_at": string,"id"?: string,"invoice_id": string,"member_id": string,"org_id": string,"provider": Database["public"]['Enums']["collection_provider"],"provider_link_id"?: string | null,"request_id"?: string | null,"short_url"?: string | null,"status"?: Database["public"]['Enums']["collection_request_status"],"updated_at"?: string,"upi_uri"?: string | null
                   }
                   Update: {
-                    "amount"?: number,"confirmed_payment_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"invoice_id"?: string,"member_id"?: string,"org_id"?: string,"provider"?: Database["public"]['Enums']["collection_provider"],"provider_link_id"?: string | null,"short_url"?: string | null,"status"?: Database["public"]['Enums']["collection_request_status"],"updated_at"?: string,"upi_uri"?: string | null
+                    "amount"?: number,"confirmed_payment_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"invoice_id"?: string,"member_id"?: string,"org_id"?: string,"provider"?: Database["public"]['Enums']["collection_provider"],"provider_link_id"?: string | null,"request_id"?: string | null,"short_url"?: string | null,"status"?: Database["public"]['Enums']["collection_request_status"],"updated_at"?: string,"upi_uri"?: string | null
                   }
                   Relationships: [
                     {
@@ -159,6 +159,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     },{
       foreignKeyName: "expenses_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"gateway_events": {
+                  Row: {
+                    "created_at": string,"error": string | null,"event_id": string,"event_type": string,"id": string,"org_id": string | null,"payload": NonNullable<Json>,"processed_at": string | null,"provider": Database["public"]['Enums']["collection_provider"],"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"error"?: string | null,"event_id": string,"event_type": string,"id"?: string,"org_id"?: string | null,"payload": NonNullable<Json>,"processed_at"?: string | null,"provider": Database["public"]['Enums']["collection_provider"],"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"error"?: string | null,"event_id"?: string,"event_type"?: string,"id"?: string,"org_id"?: string | null,"payload"?: NonNullable<Json>,"processed_at"?: string | null,"provider"?: Database["public"]['Enums']["collection_provider"],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "gateway_events_org_id_fkey"
       columns: ["org_id"]
 isOneToOne: false
       referencedRelation: "organizations"
@@ -395,14 +415,14 @@ isOneToOne: false
                   ]
                 },"organization_secrets": {
                   Row: {
-                    "created_at": string,"org_id": string,"razorpay_key_id": string | null,"razorpay_key_secret_enc": string | null,"razorpay_webhook_secret_enc": string | null,"updated_at": string,"whatsapp_access_token_enc": string | null,"whatsapp_phone_number_id": string | null
+                    "cashfree_app_id": string | null,"cashfree_environment": string | null,"cashfree_secret_key_enc": string | null,"cashfree_verified_at": string | null,"created_at": string,"org_id": string,"razorpay_key_id": string | null,"razorpay_key_secret_enc": string | null,"razorpay_webhook_secret_enc": string | null,"updated_at": string,"whatsapp_access_token_enc": string | null,"whatsapp_phone_number_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"org_id": string,"razorpay_key_id"?: string | null,"razorpay_key_secret_enc"?: string | null,"razorpay_webhook_secret_enc"?: string | null,"updated_at"?: string,"whatsapp_access_token_enc"?: string | null,"whatsapp_phone_number_id"?: string | null
+                    "cashfree_app_id"?: string | null,"cashfree_environment"?: string | null,"cashfree_secret_key_enc"?: string | null,"cashfree_verified_at"?: string | null,"created_at"?: string,"org_id": string,"razorpay_key_id"?: string | null,"razorpay_key_secret_enc"?: string | null,"razorpay_webhook_secret_enc"?: string | null,"updated_at"?: string,"whatsapp_access_token_enc"?: string | null,"whatsapp_phone_number_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"org_id"?: string,"razorpay_key_id"?: string | null,"razorpay_key_secret_enc"?: string | null,"razorpay_webhook_secret_enc"?: string | null,"updated_at"?: string,"whatsapp_access_token_enc"?: string | null,"whatsapp_phone_number_id"?: string | null
+                    "cashfree_app_id"?: string | null,"cashfree_environment"?: string | null,"cashfree_secret_key_enc"?: string | null,"cashfree_verified_at"?: string | null,"created_at"?: string,"org_id"?: string,"razorpay_key_id"?: string | null,"razorpay_key_secret_enc"?: string | null,"razorpay_webhook_secret_enc"?: string | null,"updated_at"?: string,"whatsapp_access_token_enc"?: string | null,"whatsapp_phone_number_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -479,14 +499,14 @@ isOneToOne: false
                   ]
                 },"payments": {
                   Row: {
-                    "amount": number,"collected_by": string | null,"created_at": string,"id": string,"invoice_id": string,"is_reversal": boolean,"member_id": string,"method": Database["public"]['Enums']["payment_method"],"org_id": string,"paid_at": string,"razorpay_payment_id": string | null,"reference": string | null,"reversal_reason": string | null,"reverses_payment_id": string | null,"updated_at": string,"utr": string | null
+                    "amount": number,"collected_by": string | null,"created_at": string,"gateway_payment_id": string | null,"id": string,"invoice_id": string,"is_reversal": boolean,"member_id": string,"method": Database["public"]['Enums']["payment_method"],"org_id": string,"paid_at": string,"razorpay_payment_id": string | null,"reference": string | null,"request_id": string | null,"reversal_reason": string | null,"reverses_payment_id": string | null,"updated_at": string,"utr": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount": number,"collected_by"?: string | null,"created_at"?: string,"id"?: string,"invoice_id": string,"is_reversal"?: boolean,"member_id": string,"method": Database["public"]['Enums']["payment_method"],"org_id": string,"paid_at"?: string,"razorpay_payment_id"?: string | null,"reference"?: string | null,"reversal_reason"?: string | null,"reverses_payment_id"?: string | null,"updated_at"?: string,"utr"?: string | null
+                    "amount": number,"collected_by"?: string | null,"created_at"?: string,"gateway_payment_id"?: string | null,"id"?: string,"invoice_id": string,"is_reversal"?: boolean,"member_id": string,"method": Database["public"]['Enums']["payment_method"],"org_id": string,"paid_at"?: string,"razorpay_payment_id"?: string | null,"reference"?: string | null,"request_id"?: string | null,"reversal_reason"?: string | null,"reverses_payment_id"?: string | null,"updated_at"?: string,"utr"?: string | null
                   }
                   Update: {
-                    "amount"?: number,"collected_by"?: string | null,"created_at"?: string,"id"?: string,"invoice_id"?: string,"is_reversal"?: boolean,"member_id"?: string,"method"?: Database["public"]['Enums']["payment_method"],"org_id"?: string,"paid_at"?: string,"razorpay_payment_id"?: string | null,"reference"?: string | null,"reversal_reason"?: string | null,"reverses_payment_id"?: string | null,"updated_at"?: string,"utr"?: string | null
+                    "amount"?: number,"collected_by"?: string | null,"created_at"?: string,"gateway_payment_id"?: string | null,"id"?: string,"invoice_id"?: string,"is_reversal"?: boolean,"member_id"?: string,"method"?: Database["public"]['Enums']["payment_method"],"org_id"?: string,"paid_at"?: string,"razorpay_payment_id"?: string | null,"reference"?: string | null,"request_id"?: string | null,"reversal_reason"?: string | null,"reverses_payment_id"?: string | null,"updated_at"?: string,"utr"?: string | null
                   }
                   Relationships: [
                     {
@@ -613,26 +633,6 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"razorpay_events": {
-                  Row: {
-                    "created_at": string,"error": string | null,"event_id": string,"event_type": string,"id": string,"org_id": string | null,"payload": NonNullable<Json>,"processed_at": string | null,"updated_at": string
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "created_at"?: string,"error"?: string | null,"event_id": string,"event_type": string,"id"?: string,"org_id"?: string | null,"payload": NonNullable<Json>,"processed_at"?: string | null,"updated_at"?: string
-                  }
-                  Update: {
-                    "created_at"?: string,"error"?: string | null,"event_id"?: string,"event_type"?: string,"id"?: string,"org_id"?: string | null,"payload"?: NonNullable<Json>,"processed_at"?: string | null,"updated_at"?: string
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "razorpay_events_org_id_fkey"
-      columns: ["org_id"]
-isOneToOne: false
-      referencedRelation: "organizations"
-      referencedColumns: ["id"]
-    }
-                  ]
                 },"team_members": {
                   Row: {
                     "created_at": string,"id": string,"is_active": boolean,"org_id": string,"role": Database["public"]['Enums']["team_role"],"updated_at": string,"user_id": string
@@ -694,6 +694,33 @@ isOneToOne: false
               "fiscal_year": string,"invoice_number": string
             }[]
                            },
+"apply_payment":
+{ Args: { "p_amount": number,"p_collection_request_id": string,"p_gateway_payment_id": string,"p_invoice_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_paid_at": string,"p_reference": string,"p_request_id": string,"p_utr": string }; Returns: {
+              "amount": number,
+"collected_by": string | null,
+"created_at": string,
+"gateway_payment_id": string | null,
+"id": string,
+"invoice_id": string,
+"is_reversal": boolean,
+"member_id": string,
+"method": Database["public"]['Enums']["payment_method"],
+"org_id": string,
+"paid_at": string,
+"razorpay_payment_id": string | null,
+"reference": string | null,
+"request_id": string | null,
+"reversal_reason": string | null,
+"reverses_payment_id": string | null,
+"updated_at": string,
+"utr": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "payments"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "assert_org_role":
 { Args: { "p_org": string,"p_roles": (Database["public"]['Enums']["team_role"])[] }; Returns: undefined
                            },
@@ -780,6 +807,31 @@ isOneToOne: false
 "check_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },
+"close_gateway_link":
+{ Args: { "p_org": string,"p_request_id": string,"p_status": Database["public"]['Enums']["collection_request_status"] }; Returns: {
+              "amount": number,
+"confirmed_payment_id": string | null,
+"created_at": string,
+"created_by": string | null,
+"expires_at": string,
+"id": string,
+"invoice_id": string,
+"member_id": string,
+"org_id": string,
+"provider": Database["public"]['Enums']["collection_provider"],
+"provider_link_id": string | null,
+"request_id": string | null,
+"short_url": string | null,
+"status": Database["public"]['Enums']["collection_request_status"],
+"updated_at": string,
+"upi_uri": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "collection_requests"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "compute_membership_status":
 { Args: { "m": Omit<Database["public"]['Tables']["memberships"]['Row'], Database["public"]['Tables']["memberships"]['ComputedFields']>,"p_today": string }; Returns: Database["public"]['Enums']["membership_status"]
                            },
@@ -910,6 +962,9 @@ isOneToOne: false
 "ist_today":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"list_dues":
+{ Args: { "p_filter"?: string,"p_org": string,"p_page"?: number,"p_page_size"?: number,"p_search"?: string }; Returns: Json
+                           },
 "list_members":
 { Args: { "p_filter"?: string,"p_org": string,"p_page"?: number,"p_page_size"?: number,"p_search"?: string }; Returns: Json
                            },
@@ -964,11 +1019,12 @@ isOneToOne: false
 "recompute_invoice":
 { Args: { "p_invoice_id": string }; Returns: undefined
                            },
-"record_payment":
-{ Args: { "p_amount": number,"p_collection_request_id"?: string,"p_invoice_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_paid_at"?: string,"p_razorpay_payment_id"?: string,"p_reference"?: string,"p_utr"?: string }; Returns: {
+"record_gateway_payment":
+{ Args: { "p_amount": number,"p_collection_request_id": string,"p_gateway_payment_id": string,"p_org": string,"p_paid_at": string,"p_reference": string }; Returns: {
               "amount": number,
 "collected_by": string | null,
 "created_at": string,
+"gateway_payment_id": string | null,
 "id": string,
 "invoice_id": string,
 "is_reversal": boolean,
@@ -978,6 +1034,34 @@ isOneToOne: false
 "paid_at": string,
 "razorpay_payment_id": string | null,
 "reference": string | null,
+"request_id": string | null,
+"reversal_reason": string | null,
+"reverses_payment_id": string | null,
+"updated_at": string,
+"utr": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "payments"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"record_payment":
+{ Args: { "p_amount": number,"p_invoice_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_org": string,"p_paid_on"?: string,"p_reference"?: string,"p_request_id": string,"p_utr"?: string }; Returns: {
+              "amount": number,
+"collected_by": string | null,
+"created_at": string,
+"gateway_payment_id": string | null,
+"id": string,
+"invoice_id": string,
+"is_reversal": boolean,
+"member_id": string,
+"method": Database["public"]['Enums']["payment_method"],
+"org_id": string,
+"paid_at": string,
+"razorpay_payment_id": string | null,
+"reference": string | null,
+"request_id": string | null,
 "reversal_reason": string | null,
 "reverses_payment_id": string | null,
 "updated_at": string,
@@ -1016,6 +1100,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"remove_cashfree_credentials":
+{ Args: { "p_org": string }; Returns: undefined
+                           },
 "restore_member":
 { Args: { "p_member_id": string }; Returns: {
               "address": string | null,
@@ -1054,6 +1141,7 @@ isOneToOne: false
               "amount": number,
 "collected_by": string | null,
 "created_at": string,
+"gateway_payment_id": string | null,
 "id": string,
 "invoice_id": string,
 "is_reversal": boolean,
@@ -1063,6 +1151,7 @@ isOneToOne: false
 "paid_at": string,
 "razorpay_payment_id": string | null,
 "reference": string | null,
+"request_id": string | null,
 "reversal_reason": string | null,
 "reverses_payment_id": string | null,
 "updated_at": string,
@@ -1077,6 +1166,34 @@ isOneToOne: false
 "safe_uuid":
 { Args: { "p": string }; Returns: string
                            },
+"save_cashfree_credentials":
+{ Args: { "p_app_id": string,"p_environment": string,"p_org": string,"p_secret_enc": string }; Returns: undefined
+                           },
+"save_gateway_link":
+{ Args: { "p_amount": number,"p_expires_at": string,"p_invoice_id": string,"p_link_id": string,"p_org": string,"p_request_id": string,"p_url": string }; Returns: {
+              "amount": number,
+"confirmed_payment_id": string | null,
+"created_at": string,
+"created_by": string | null,
+"expires_at": string,
+"id": string,
+"invoice_id": string,
+"member_id": string,
+"org_id": string,
+"provider": Database["public"]['Enums']["collection_provider"],
+"provider_link_id": string | null,
+"request_id": string | null,
+"short_url": string | null,
+"status": Database["public"]['Enums']["collection_request_status"],
+"updated_at": string,
+"upi_uri": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "collection_requests"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "save_onboarding_plans":
 { Args: { "p_org": string,"p_plans": Json }; Returns: number
                            },
@@ -1244,6 +1361,38 @@ isOneToOne: false
 "update_member":
 { Args: { "p_data": Json,"p_member_id": string,"p_org": string }; Returns: string
                            },
+"update_payment_settings":
+{ Args: { "p_default_mode": Database["public"]['Enums']["collection_mode"],"p_org": string,"p_upi_payee_name": string,"p_upi_vpa": string }; Returns: {
+              "address_line": string | null,
+"city": string | null,
+"created_at": string,
+"default_collection_mode": Database["public"]['Enums']["collection_mode"],
+"deletion_scheduled_for": string | null,
+"email": string | null,
+"gst_enabled": boolean,
+"gst_rate": number,
+"gstin": string | null,
+"id": string,
+"invoice_prefix": string,
+"kiosk_pin_hash": string | null,
+"logo_url": string | null,
+"name": string,
+"phone": string | null,
+"pincode": string | null,
+"settings": NonNullable<Json>,
+"state": string | null,
+"timezone": string,
+"updated_at": string,
+"upi_payee_name": string | null,
+"upi_vpa": string | null,
+"vertical": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "organizations"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "void_invoice":
 { Args: { "p_invoice_id": string,"p_reason": string }; Returns: {
               "amount_paid": number,
@@ -1283,7 +1432,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "check_in_flag": "expiring"|"expired"|"dues_pending","check_in_method": "manual"|"qr","collection_mode": "upi_direct"|"razorpay","collection_provider": "upi_direct"|"razorpay","collection_request_status": "pending"|"paid"|"expired"|"cancelled","expense_category": "rent"|"salaries"|"electricity"|"equipment"|"maintenance"|"marketing"|"supplies"|"other","invoice_status": "unpaid"|"partially_paid"|"paid"|"void","member_source": "walk_in"|"instagram"|"referral"|"google"|"other","membership_status": "upcoming"|"active"|"frozen"|"expired"|"cancelled","message_channel": "whatsapp_manual"|"whatsapp_api","message_status": "prepared"|"sent"|"delivered"|"failed","payment_claim_status": "pending"|"confirmed"|"rejected","payment_method": "cash"|"upi"|"razorpay"|"card"|"bank_transfer","plan_type": "duration"|"sessions","team_role": "owner"|"manager"|"staff"
+            "check_in_flag": "expiring"|"expired"|"dues_pending","check_in_method": "manual"|"qr","collection_mode": "upi_direct"|"razorpay"|"cashfree","collection_provider": "upi_direct"|"razorpay"|"cashfree","collection_request_status": "pending"|"paid"|"expired"|"cancelled","expense_category": "rent"|"salaries"|"electricity"|"equipment"|"maintenance"|"marketing"|"supplies"|"other","invoice_status": "unpaid"|"partially_paid"|"paid"|"void","member_source": "walk_in"|"instagram"|"referral"|"google"|"other","membership_status": "upcoming"|"active"|"frozen"|"expired"|"cancelled","message_channel": "whatsapp_manual"|"whatsapp_api","message_status": "prepared"|"sent"|"delivered"|"failed","payment_claim_status": "pending"|"confirmed"|"rejected","payment_method": "cash"|"upi"|"razorpay"|"card"|"bank_transfer"|"cashfree","plan_type": "duration"|"sessions","team_role": "owner"|"manager"|"staff"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1399,7 +1548,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "check_in_flag": ["expiring", "expired", "dues_pending"],"check_in_method": ["manual", "qr"],"collection_mode": ["upi_direct", "razorpay"],"collection_provider": ["upi_direct", "razorpay"],"collection_request_status": ["pending", "paid", "expired", "cancelled"],"expense_category": ["rent", "salaries", "electricity", "equipment", "maintenance", "marketing", "supplies", "other"],"invoice_status": ["unpaid", "partially_paid", "paid", "void"],"member_source": ["walk_in", "instagram", "referral", "google", "other"],"membership_status": ["upcoming", "active", "frozen", "expired", "cancelled"],"message_channel": ["whatsapp_manual", "whatsapp_api"],"message_status": ["prepared", "sent", "delivered", "failed"],"payment_claim_status": ["pending", "confirmed", "rejected"],"payment_method": ["cash", "upi", "razorpay", "card", "bank_transfer"],"plan_type": ["duration", "sessions"],"team_role": ["owner", "manager", "staff"]
+            "check_in_flag": ["expiring", "expired", "dues_pending"],"check_in_method": ["manual", "qr"],"collection_mode": ["upi_direct", "razorpay", "cashfree"],"collection_provider": ["upi_direct", "razorpay", "cashfree"],"collection_request_status": ["pending", "paid", "expired", "cancelled"],"expense_category": ["rent", "salaries", "electricity", "equipment", "maintenance", "marketing", "supplies", "other"],"invoice_status": ["unpaid", "partially_paid", "paid", "void"],"member_source": ["walk_in", "instagram", "referral", "google", "other"],"membership_status": ["upcoming", "active", "frozen", "expired", "cancelled"],"message_channel": ["whatsapp_manual", "whatsapp_api"],"message_status": ["prepared", "sent", "delivered", "failed"],"payment_claim_status": ["pending", "confirmed", "rejected"],"payment_method": ["cash", "upi", "razorpay", "card", "bank_transfer", "cashfree"],"plan_type": ["duration", "sessions"],"team_role": ["owner", "manager", "staff"]
           }
         }
 } as const

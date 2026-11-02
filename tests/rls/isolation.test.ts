@@ -101,7 +101,7 @@ describe('M1 atomic writes and role boundaries', () => {
     planId = plan.data!;
   });
   afterAll(async () => {
-    if (staff) await admin.auth.admin.deleteUser(staff.userId);
+    if (staff) expect((await admin.auth.admin.deleteUser(staff.userId)).error).toBeNull();
   });
 
   it('staff can read plans but cannot change them or access another gym through RPCs', async () => {
@@ -593,6 +593,611 @@ describe('M1 atomic writes and role boundaries', () => {
   });
 });
 
+describe('M2 payments, claims, gateway links and dues', () => {
+  type PaymentArgs = Database['public']['Functions']['record_payment']['Args'];
+  type LinkArgs = Database['public']['Functions']['save_gateway_link']['Args'];
+  let staff: { client: Client; userId: string };
+  let planId: string;
+  let foreignPlanId: string;
+  let nextPhone = 20000000;
+  const today = todayIST();
+  const inOneHour = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  const utr = () => String(Math.floor(100000000000 + Math.random() * 899999999999));
+
+  async function invoiced(name: string, tenant: Tenant = a, plan = planId) {
+    const memberId = randomUUID();
+    const created = await tenant.client.rpc('create_member', {
+      p_org: tenant.orgId,
+      p_member_id: memberId,
+      p_data: { full_name: name, phone: `+9196${++nextPhone}`, consent_messaging: false },
+      p_membership: { plan_id: plan, start_date: today },
+    });
+    expect(created.error).toBeNull();
+    const invoice = await admin.from('invoices').select('*').eq('member_id', memberId).single();
+    expect(invoice.error).toBeNull();
+    return { memberId, invoice: invoice.data! };
+  }
+  function pay(invoiceId: string, amount: number, extra: Partial<PaymentArgs> = {}): PaymentArgs {
+    return {
+      p_org: a.orgId,
+      p_invoice_id: invoiceId,
+      p_request_id: randomUUID(),
+      p_amount: amount,
+      p_method: 'cash',
+      ...extra,
+    };
+  }
+  async function invoiceState(id: string) {
+    const stored = await admin
+      .from('invoices')
+      .select('status,amount_paid,balance_due')
+      .eq('id', id)
+      .single();
+    expect(stored.error).toBeNull();
+    return stored.data;
+  }
+  function link(invoiceId: string, extra: Partial<LinkArgs> = {}): LinkArgs {
+    return {
+      p_org: a.orgId,
+      p_invoice_id: invoiceId,
+      p_request_id: randomUUID(),
+      p_link_id: `gd_${run}_${randomUUID().slice(0, 8)}`,
+      p_url: 'https://payments-test.cashfree.com/links/rls',
+      p_amount: 1000,
+      p_expires_at: inOneHour(),
+      ...extra,
+    };
+  }
+
+  beforeAll(async () => {
+    staff = await signedInClient(`rls-m2-staff-${run}@example.test`, 'Passw0rd!rls');
+    const team = await admin
+      .from('team_members')
+      .insert({ org_id: a.orgId, user_id: staff.userId, role: 'staff' });
+    expect(team.error).toBeNull();
+    const plans = await Promise.all(
+      [a, b].map((tenant) =>
+        tenant.client.rpc('save_plan', {
+          p_org: tenant.orgId,
+          p_data: {
+            name: 'M2 Monthly',
+            type: 'duration',
+            duration_days: 30,
+            price: 1000,
+            is_active: true,
+          },
+        }),
+      ),
+    );
+    for (const plan of plans) expect(plan.error).toBeNull();
+    planId = plans[0]!.data!;
+    foreignPlanId = plans[1]!.data!;
+  });
+  afterAll(async () => {
+    if (staff) expect((await admin.auth.admin.deleteUser(staff.userId)).error).toBeNull();
+  });
+
+  it('records a counter payment once per request and keeps the invoice balance in step', async () => {
+    const { invoice } = await invoiced('Billing Test Partial');
+    expect(invoice.total_amount).toBe(1000);
+    const payload = pay(invoice.id, 400);
+    const first = await staff.client.rpc('record_payment', payload);
+    expect(first.error).toBeNull();
+    expect(first.data?.collected_by).not.toBeNull();
+    const retry = await staff.client.rpc('record_payment', payload);
+    expect(retry.error).toBeNull();
+    expect(retry.data?.id).toBe(first.data?.id);
+    expect(
+      (await admin.from('payments').select('id').eq('invoice_id', invoice.id)).data,
+    ).toHaveLength(1);
+    expect(await invoiceState(invoice.id)).toEqual({
+      status: 'partially_paid',
+      amount_paid: 400,
+      balance_due: 600,
+    });
+    const audit = await admin
+      .from('audit_logs')
+      .select('id')
+      .eq('entity_id', first.data!.id)
+      .eq('action', 'payment.recorded');
+    expect(audit.data).toHaveLength(1);
+
+    const rejected: [Partial<PaymentArgs>, string][] = [
+      [{ p_request_id: payload.p_request_id, p_amount: 401 }, 'request_conflict'],
+      [{ p_amount: 600.01 }, 'amount_exceeds_balance'],
+      [{ p_utr: utr() }, 'invalid_input'],
+      [{ p_method: 'cashfree' }, 'invalid_input'],
+      [{ p_paid_on: addDays(today, 1) }, 'invalid_paid_on'],
+      [{ p_paid_on: addDays(today, -91) }, 'invalid_paid_on'],
+      [{ p_method: 'upi', p_utr: '12345' }, 'invalid_utr'],
+    ];
+    for (const [extra, message] of rejected) {
+      const result = await staff.client.rpc('record_payment', pay(invoice.id, 10, extra));
+      expect(result.error?.message, message).toBe(message);
+    }
+
+    const upiRef = utr();
+    const upi = await staff.client.rpc(
+      'record_payment',
+      pay(invoice.id, 100, { p_method: 'upi', p_utr: upiRef, p_paid_on: addDays(today, -2) }),
+    );
+    expect(upi.error).toBeNull();
+    const duplicate = await staff.client.rpc(
+      'record_payment',
+      pay(invoice.id, 100, { p_method: 'upi', p_utr: upiRef }),
+    );
+    expect(duplicate.error?.message).toBe('duplicate_utr');
+    expect((await staff.client.rpc('record_payment', pay(invoice.id, 500))).error).toBeNull();
+    expect(await invoiceState(invoice.id)).toEqual({
+      status: 'paid',
+      amount_paid: 1000,
+      balance_due: 0,
+    });
+  });
+
+  it('keeps payments, reversals and voids inside the gym and the right roles', async () => {
+    const { invoice, memberId } = await invoiced('Billing Test Reverse');
+    const foreign = await b.client.rpc('record_payment', {
+      ...pay(invoice.id, 100),
+      p_org: b.orgId,
+    });
+    expect(foreign.error?.message).toBe('invoice_not_found');
+    expect((await b.client.rpc('record_payment', pay(invoice.id, 100))).error?.code).toBe('42501');
+    const direct = await a.client.from('payments').insert({
+      org_id: a.orgId,
+      invoice_id: invoice.id,
+      member_id: memberId,
+      amount: 1,
+      method: 'cash',
+    });
+    expect(direct.error?.code).toBe('42501');
+
+    const paid = await staff.client.rpc('record_payment', pay(invoice.id, 1000));
+    expect(paid.error).toBeNull();
+    const reverse = { p_payment_id: paid.data!.id, p_reason: 'Wrong member' };
+    expect((await staff.client.rpc('reverse_payment', reverse)).error?.code).toBe('42501');
+    expect((await b.client.rpc('reverse_payment', reverse)).error?.code).toBe('42501');
+    const voiding = { p_invoice_id: invoice.id, p_reason: 'Duplicate invoice' };
+    expect((await a.client.rpc('void_invoice', voiding)).error?.message).toBe(
+      'invoice_has_payments',
+    );
+    expect(
+      (await a.client.rpc('reverse_payment', { ...reverse, p_reason: ' ' })).error?.message,
+    ).toBe('reason_required');
+    const reversed = await a.client.rpc('reverse_payment', reverse);
+    expect(reversed.error).toBeNull();
+    expect(reversed.data?.amount).toBe(-1000);
+    expect((await a.client.rpc('reverse_payment', reverse)).error?.message).toBe(
+      'already_reversed',
+    );
+    expect(
+      (await a.client.rpc('reverse_payment', { ...reverse, p_payment_id: reversed.data!.id })).error
+        ?.message,
+    ).toBe('cannot_reverse_reversal');
+    expect(await invoiceState(invoice.id)).toEqual({
+      status: 'unpaid',
+      amount_paid: 0,
+      balance_due: 1000,
+    });
+
+    expect((await staff.client.rpc('void_invoice', voiding)).error?.code).toBe('42501');
+    expect((await b.client.rpc('void_invoice', voiding)).error?.code).toBe('42501');
+    const voided = await a.client.rpc('void_invoice', voiding);
+    expect(voided.error).toBeNull();
+    expect(voided.data?.status).toBe('void');
+    expect(voided.data?.balance_due).toBe(0);
+    expect((await admin.from('invoices').select('id').eq('id', invoice.id)).data).toHaveLength(1);
+    expect((await staff.client.rpc('record_payment', pay(invoice.id, 1))).error?.message).toBe(
+      'invoice_void',
+    );
+  });
+
+  it('confirms and rejects member UPI claims once, inside the gym only', async () => {
+    const { invoice } = await invoiced('Billing Test Claims');
+    const firstUtr = utr();
+    const claimArgs = { p_invoice_id: invoice.id, p_amount: 300, p_utr: firstUtr };
+    expect((await a.client.rpc('submit_payment_claim', claimArgs)).error).not.toBeNull();
+    const claim = await admin.rpc('submit_payment_claim', { ...claimArgs, p_note: 'Paid by GPay' });
+    expect(claim.error).toBeNull();
+    expect((await admin.rpc('submit_payment_claim', claimArgs)).error?.message).toBe(
+      'duplicate_utr',
+    );
+    expect(
+      (await b.client.from('payment_claims').select('id').eq('id', claim.data!.id)).data,
+    ).toEqual([]);
+    expect(
+      (await b.client.rpc('confirm_payment_claim', { p_claim_id: claim.data!.id })).error?.code,
+    ).toBe('42501');
+
+    const confirmed = await staff.client.rpc('confirm_payment_claim', {
+      p_claim_id: claim.data!.id,
+    });
+    expect(confirmed.error).toBeNull();
+    expect(confirmed.data?.status).toBe('confirmed');
+    const payment = await admin
+      .from('payments')
+      .select('amount,method,utr')
+      .eq('id', confirmed.data!.payment_id!)
+      .single();
+    expect(payment.data).toEqual({ amount: 300, method: 'upi', utr: firstUtr });
+    expect(
+      (await staff.client.rpc('confirm_payment_claim', { p_claim_id: claim.data!.id })).error
+        ?.message,
+    ).toBe('claim_not_pending');
+
+    const second = await admin.rpc('submit_payment_claim', {
+      p_invoice_id: invoice.id,
+      p_amount: 200,
+      p_utr: utr(),
+    });
+    expect(second.error).toBeNull();
+    const reject = { p_claim_id: second.data!.id, p_reason: 'No such credit in the bank' };
+    expect((await b.client.rpc('reject_payment_claim', reject)).error?.code).toBe('42501');
+    expect(
+      (await staff.client.rpc('reject_payment_claim', { ...reject, p_reason: ' ' })).error?.message,
+    ).toBe('reason_required');
+    const rejected = await staff.client.rpc('reject_payment_claim', reject);
+    expect(rejected.error).toBeNull();
+    expect(rejected.data?.status).toBe('rejected');
+    expect(await invoiceState(invoice.id)).toEqual({
+      status: 'partially_paid',
+      amount_paid: 300,
+      balance_due: 700,
+    });
+
+    const counterUtr = utr();
+    const third = await admin.rpc('submit_payment_claim', {
+      p_invoice_id: invoice.id,
+      p_amount: 200,
+      p_utr: counterUtr,
+    });
+    expect(third.error).toBeNull();
+    const counter = await staff.client.rpc(
+      'record_payment',
+      pay(invoice.id, 200, { p_method: 'upi', p_utr: counterUtr }),
+    );
+    expect(counter.error).toBeNull();
+    const matched = await admin
+      .from('payment_claims')
+      .select('status,payment_id')
+      .eq('id', third.data!.id)
+      .single();
+    expect(matched.data).toEqual({ status: 'confirmed', payment_id: counter.data!.id });
+    expect(
+      (
+        await admin.rpc('submit_payment_claim', {
+          p_invoice_id: invoice.id,
+          p_amount: 1,
+          p_utr: utr(),
+        })
+      ).error?.message,
+    ).toBe('claim_limit_reached');
+  });
+
+  it('saves one live Cashfree link per invoice and takes gateway money only from the server', async () => {
+    const { invoice, memberId } = await invoiced('Billing Test Gateway');
+    const saveArgs = link(invoice.id);
+    for (const extra of [
+      { p_url: 'http://payments-test.cashfree.com/links/rls' },
+      { p_link_id: 'bad link id' },
+      { p_expires_at: new Date(Date.now() - 1000).toISOString() },
+    ]) {
+      const result = await staff.client.rpc('save_gateway_link', { ...saveArgs, ...extra });
+      expect(result.error?.message).toBe('invalid_input');
+    }
+    expect(
+      (await staff.client.rpc('save_gateway_link', { ...saveArgs, p_amount: 1000.01 })).error
+        ?.message,
+    ).toBe('invalid_amount');
+    expect((await b.client.rpc('save_gateway_link', saveArgs)).error?.code).toBe('42501');
+    expect(
+      (await b.client.rpc('save_gateway_link', { ...saveArgs, p_org: b.orgId })).error?.message,
+    ).toBe('invoice_not_found');
+    const saved = await staff.client.rpc('save_gateway_link', saveArgs);
+    expect(saved.error).toBeNull();
+    const retry = await staff.client.rpc('save_gateway_link', saveArgs);
+    expect(retry.data?.id).toBe(saved.data?.id);
+    expect(
+      (await staff.client.rpc('save_gateway_link', { ...saveArgs, p_link_id: 'other_link' })).error
+        ?.message,
+    ).toBe('request_conflict');
+    expect((await staff.client.rpc('save_gateway_link', link(invoice.id))).error?.message).toBe(
+      'gateway_link_open',
+    );
+    const forgedUpdate = await a.client
+      .from('collection_requests')
+      .update({ status: 'paid' })
+      .eq('id', saved.data!.id)
+      .select('id');
+    expect(forgedUpdate.data ?? []).toEqual([]);
+    const forgedInsert = await a.client.from('collection_requests').insert({
+      org_id: a.orgId,
+      invoice_id: invoice.id,
+      member_id: memberId,
+      provider: 'upi_direct',
+      amount: 1,
+      upi_uri: 'upi://pay?pa=rlsa@okaxis',
+      expires_at: inOneHour(),
+    });
+    expect(forgedInsert.error?.code).toBe('42501');
+
+    const gateway = {
+      p_org: a.orgId,
+      p_collection_request_id: saved.data!.id,
+      p_gateway_payment_id: `cf_${run}_1`,
+      p_amount: 1000,
+      p_paid_at: new Date().toISOString(),
+      p_reference: 'Cashfree payment link',
+    };
+    expect((await a.client.rpc('record_gateway_payment', gateway)).error).not.toBeNull();
+    expect((await staff.client.rpc('record_gateway_payment', gateway)).error).not.toBeNull();
+    expect(
+      (
+        await admin.rpc('record_gateway_payment', {
+          ...gateway,
+          p_org: b.orgId,
+          p_gateway_payment_id: `cf_${run}_x`,
+        })
+      ).error?.message,
+    ).toBe('collection_request_not_found');
+    const recorded = await admin.rpc('record_gateway_payment', gateway);
+    expect(recorded.error).toBeNull();
+    expect(recorded.data?.method).toBe('cashfree');
+    expect((await admin.rpc('record_gateway_payment', gateway)).data?.id).toBe(recorded.data?.id);
+    expect(
+      (await admin.from('payments').select('id').eq('invoice_id', invoice.id)).data,
+    ).toHaveLength(1);
+    const request = await admin
+      .from('collection_requests')
+      .select('status,confirmed_payment_id')
+      .eq('id', saved.data!.id)
+      .single();
+    expect(request.data).toEqual({ status: 'paid', confirmed_payment_id: recorded.data!.id });
+    expect((await invoiceState(invoice.id))?.status).toBe('paid');
+
+    const close = { p_org: a.orgId, p_request_id: saved.data!.id, p_status: 'cancelled' as const };
+    expect((await b.client.rpc('close_gateway_link', close)).error?.code).toBe('42501');
+    expect(
+      (await b.client.rpc('close_gateway_link', { ...close, p_org: b.orgId })).error?.message,
+    ).toBe('collection_request_not_found');
+    expect(
+      (await staff.client.rpc('close_gateway_link', { ...close, p_status: 'paid' })).error?.message,
+    ).toBe('invalid_input');
+    const closed = await staff.client.rpc('close_gateway_link', close);
+    expect(closed.error).toBeNull();
+    expect(closed.data?.status).toBe('paid');
+    expect((await a.client.from('gateway_events').select('id')).data ?? []).toEqual([]);
+  });
+
+  it('lets a cancelled or lapsed link be replaced', async () => {
+    const { invoice } = await invoiced('Billing Test Replace');
+    const first = await staff.client.rpc('save_gateway_link', link(invoice.id));
+    expect(first.error).toBeNull();
+    const cancelled = await staff.client.rpc('close_gateway_link', {
+      p_org: a.orgId,
+      p_request_id: first.data!.id,
+      p_status: 'cancelled',
+    });
+    expect(cancelled.data?.status).toBe('cancelled');
+    const second = await staff.client.rpc('save_gateway_link', link(invoice.id));
+    expect(second.error).toBeNull();
+    const lapse = await admin
+      .from('collection_requests')
+      .update({ expires_at: new Date(Date.now() - 1000).toISOString() })
+      .eq('id', second.data!.id);
+    expect(lapse.error).toBeNull();
+    const third = await staff.client.rpc('save_gateway_link', link(invoice.id));
+    expect(third.error).toBeNull();
+    const lapsed = await admin
+      .from('collection_requests')
+      .select('status')
+      .eq('id', second.data!.id)
+      .single();
+    expect(lapsed.data?.status).toBe('expired');
+    const closed = await staff.client.rpc('close_gateway_link', {
+      p_org: a.orgId,
+      p_request_id: third.data!.id,
+      p_status: 'expired',
+    });
+    expect(closed.data?.status).toBe('expired');
+  });
+
+  it('limits payment settings and Cashfree credentials to owners and managers', async () => {
+    const settings = {
+      p_org: a.orgId,
+      p_upi_vpa: 'rlsa@okaxis',
+      p_upi_payee_name: 'RLS a',
+      p_default_mode: 'upi_direct' as const,
+    };
+    expect((await staff.client.rpc('update_payment_settings', settings)).error?.code).toBe('42501');
+    expect((await b.client.rpc('update_payment_settings', settings)).error?.code).toBe('42501');
+    expect(
+      (await a.client.rpc('update_payment_settings', { ...settings, p_upi_vpa: '' })).error
+        ?.message,
+    ).toBe('invalid_input');
+    expect(
+      (await a.client.rpc('update_payment_settings', { ...settings, p_default_mode: 'cashfree' }))
+        .error?.message,
+    ).toBe('cashfree_not_configured');
+
+    const credentials = {
+      p_org: a.orgId,
+      p_app_id: 'TEST1234RLS',
+      p_secret_enc: 'v1.rls-ciphertext',
+      p_environment: 'sandbox',
+    };
+    expect((await staff.client.rpc('save_cashfree_credentials', credentials)).error?.code).toBe(
+      '42501',
+    );
+    expect((await b.client.rpc('save_cashfree_credentials', credentials)).error?.code).toBe(
+      '42501',
+    );
+    expect(
+      (await a.client.rpc('save_cashfree_credentials', { ...credentials, p_secret_enc: 'plain' }))
+        .error?.message,
+    ).toBe('invalid_input');
+    expect((await a.client.rpc('save_cashfree_credentials', credentials)).error).toBeNull();
+    expect((await staff.client.from('organization_secrets').select('org_id')).data ?? []).toEqual(
+      [],
+    );
+    expect(
+      (await b.client.from('organization_secrets').select('org_id').eq('org_id', a.orgId)).data ??
+        [],
+    ).toEqual([]);
+    const forged = await a.client
+      .from('organization_secrets')
+      .update({ cashfree_app_id: 'FORGED1234' })
+      .eq('org_id', a.orgId)
+      .select('org_id');
+    expect(forged.data ?? []).toEqual([]);
+    const secrets = await admin
+      .from('organization_secrets')
+      .select('cashfree_app_id,cashfree_environment')
+      .eq('org_id', a.orgId)
+      .single();
+    expect(secrets.data).toEqual({
+      cashfree_app_id: 'TEST1234RLS',
+      cashfree_environment: 'sandbox',
+    });
+    const audit = await admin
+      .from('audit_logs')
+      .select('after')
+      .eq('org_id', a.orgId)
+      .eq('action', 'organization.secrets_updated');
+    expect(JSON.stringify(audit.data)).not.toContain('rls-ciphertext');
+    expect(audit.data?.length).toBeGreaterThan(0);
+
+    expect(
+      (await a.client.rpc('update_payment_settings', { ...settings, p_default_mode: 'cashfree' }))
+        .error,
+    ).toBeNull();
+    const { invoice } = await invoiced('Billing Test Settings');
+    const open = await staff.client.rpc('save_gateway_link', link(invoice.id));
+    expect(open.error).toBeNull();
+    expect(
+      (await staff.client.rpc('remove_cashfree_credentials', { p_org: a.orgId })).error?.code,
+    ).toBe('42501');
+    expect(
+      (await a.client.rpc('remove_cashfree_credentials', { p_org: a.orgId })).error?.message,
+    ).toBe('gateway_links_pending');
+    expect(
+      (
+        await staff.client.rpc('close_gateway_link', {
+          p_org: a.orgId,
+          p_request_id: open.data!.id,
+          p_status: 'cancelled',
+        })
+      ).error,
+    ).toBeNull();
+    expect(
+      (await a.client.rpc('remove_cashfree_credentials', { p_org: a.orgId })).error,
+    ).toBeNull();
+    const org = await admin
+      .from('organizations')
+      .select('default_collection_mode')
+      .eq('id', a.orgId)
+      .single();
+    expect(org.data?.default_collection_mode).toBe('upi_direct');
+    const cleared = await admin
+      .from('organization_secrets')
+      .select('cashfree_app_id,cashfree_secret_key_enc')
+      .eq('org_id', a.orgId)
+      .single();
+    expect(cleared.data).toEqual({ cashfree_app_id: null, cashfree_secret_key_enc: null });
+  });
+
+  it('lets a collector leave the team while their payments stay unchanged', async () => {
+    const leaver = await signedInClient(`rls-m2-leaver-${run}@example.test`, 'Passw0rd!rls');
+    const team = await admin
+      .from('team_members')
+      .insert({ org_id: a.orgId, user_id: leaver.userId, role: 'staff' })
+      .select('id')
+      .single();
+    expect(team.error).toBeNull();
+    const { invoice } = await invoiced('Billing Test Leaver');
+    const paid = await leaver.client.rpc('record_payment', pay(invoice.id, 250));
+    expect(paid.error).toBeNull();
+    expect(paid.data?.collected_by).toBe(team.data!.id);
+    const tamper = await admin.from('payments').update({ amount: 1 }).eq('id', paid.data!.id);
+    expect(tamper.error?.message).toContain('immutable');
+
+    expect((await admin.auth.admin.deleteUser(leaver.userId)).error).toBeNull();
+    const kept = await admin
+      .from('payments')
+      .select('amount,collected_by')
+      .eq('id', paid.data!.id)
+      .single();
+    expect(kept.data).toEqual({ amount: 250, collected_by: null });
+    expect((await invoiceState(invoice.id))?.balance_due).toBe(750);
+  });
+  it('lists dues for the signed-in gym only, claims first and deleted members hidden', async () => {
+    const fresh = await invoiced('Dues Test Fresh');
+    const claimed = await invoiced('Dues Test Claimed');
+    expect(
+      (
+        await admin.rpc('submit_payment_claim', {
+          p_invoice_id: claimed.invoice.id,
+          p_amount: 100,
+          p_utr: utr(),
+        })
+      ).error,
+    ).toBeNull();
+    const gone = await invoiced('Dues Test Deleted');
+    expect(
+      (await a.client.rpc('soft_delete_member', { p_member_id: gone.memberId })).error,
+    ).toBeNull();
+    await invoiced('Dues Test Foreign', b, foreignPlanId);
+
+    const schema = z.object({
+      total: z.number(),
+      summary: z.object({ outstanding: z.number(), all: z.number(), claims_count: z.number() }),
+      rows: z.array(z.object({ id: z.string(), pending_claims: z.number() })),
+    });
+    const result = await staff.client.rpc('list_dues', { p_org: a.orgId, p_search: 'Dues Test' });
+    expect(result.error).toBeNull();
+    const parsed = schema.parse(result.data);
+    expect(parsed.total).toBe(2);
+    expect(parsed.rows.map((row) => row.id)).toEqual([claimed.invoice.id, fresh.invoice.id]);
+    expect(parsed.summary).toEqual({ outstanding: 2000, all: 2, claims_count: 1 });
+
+    const claims = await staff.client.rpc('list_dues', {
+      p_org: a.orgId,
+      p_search: 'Dues Test',
+      p_filter: 'claims',
+    });
+    expect(schema.parse(claims.data).rows.map((row) => row.id)).toEqual([claimed.invoice.id]);
+    const byNumber = await staff.client.rpc('list_dues', {
+      p_org: a.orgId,
+      p_search: fresh.invoice.invoice_number,
+    });
+    expect(schema.parse(byNumber.data).rows.map((row) => row.id)).toEqual([fresh.invoice.id]);
+    expect((await a.client.rpc('list_dues', { p_org: b.orgId })).error?.code).toBe('42501');
+    expect(
+      (await staff.client.rpc('list_dues', { p_org: a.orgId, p_filter: 'everything' })).error
+        ?.message,
+    ).toBe('invalid_input');
+  });
+
+  it('does not expose billing functions to anonymous users', async () => {
+    const anon = createClient<Database>(SUPABASE_URL, ANON_KEY, {
+      auth: { persistSession: false },
+    });
+    const invoiceId = randomUUID();
+    expect((await anon.rpc('list_dues', { p_org: a.orgId })).error).not.toBeNull();
+    expect((await anon.rpc('record_payment', pay(invoiceId, 1))).error).not.toBeNull();
+    expect((await anon.rpc('save_gateway_link', link(invoiceId))).error).not.toBeNull();
+    expect(
+      (
+        await anon.rpc('submit_payment_claim', {
+          p_invoice_id: invoiceId,
+          p_amount: 1,
+          p_utr: utr(),
+        })
+      ).error,
+    ).not.toBeNull();
+    expect((await anon.from('collection_requests').select('id')).error).not.toBeNull();
+  });
+});
 type Tenant = {
   client: Client;
   userId: string;

@@ -44,6 +44,12 @@ export function toRupeeString(paise: Paise): string {
   return `${paise < 0 ? '-' : ''}${rupees}.${rest.toString().padStart(2, '0')}`;
 }
 
+/** Prefill for an amount field: 150000 → "1500", 150050 → "1500.50". */
+export function toMoneyInput(paise: Paise): string {
+  const rounded = Math.round(paise);
+  return rounded % 100 === 0 ? String(rounded / 100) : toRupeeString(rounded);
+}
+
 export type MoneyFormat = 'auto' | 'always' | 'never';
 
 /**

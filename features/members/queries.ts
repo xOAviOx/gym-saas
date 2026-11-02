@@ -132,7 +132,7 @@ export async function getMemberActivity(
     supabase
       .from('payments')
       .select(
-        'id,paid_at,amount,method,utr,reference,razorpay_payment_id,is_reversal,invoices!inner(invoice_number)',
+        'id,invoice_id,paid_at,amount,method,utr,reference,gateway_payment_id,razorpay_payment_id,is_reversal,invoices!inner(invoice_number)',
       )
       .eq('org_id', orgId)
       .eq('member_id', memberId)
@@ -159,7 +159,8 @@ export async function getMemberActivity(
     amount: toPaise(p.amount),
     method: p.method,
     isReversal: p.is_reversal,
-    reference: p.utr ?? p.razorpay_payment_id ?? p.reference,
+    reference: p.utr ?? p.gateway_payment_id ?? p.razorpay_payment_id ?? p.reference,
+    invoiceId: p.invoice_id,
     invoiceNumber: p.invoices.invoice_number,
   }));
   return {

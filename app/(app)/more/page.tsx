@@ -31,6 +31,15 @@ export default async function MorePage() {
             <span aria-hidden="true">→</span>
           </Link>
         ) : null}
+        {can.manageSettings(ctx.role) ? (
+          <Link
+            href="/settings/payments"
+            className="bg-card flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium"
+          >
+            {copy.paymentSettings.manage}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
         <Card>
           <CardHeader>
             <CardTitle>{copy.more.gym}</CardTitle>

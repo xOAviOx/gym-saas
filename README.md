@@ -1,6 +1,6 @@
 # GymDesk
 
-India-first gym management for owners, managers and staff: members and memberships, fees collected by direct UPI or Razorpay, GST invoices and receipts, WhatsApp reminders, QR attendance with a kiosk mode, and a read-only member portal. Members never log in.
+India-first gym management for owners, managers and staff: members and memberships, fees collected by direct UPI or Cashfree, GST invoices and receipts, WhatsApp reminders, QR attendance with a kiosk mode, and a read-only member portal. Members never log in.
 
 ## Stack
 
@@ -36,8 +36,8 @@ Full walkthrough, including how to generate the secrets and what to do after cha
 | `pnpm build`     | Production build                                                    |
 | `pnpm lint`      | ESLint                                                              |
 | `pnpm typecheck` | `tsc --noEmit`                                                      |
-| `pnpm test`      | Unit tests, including members, memberships and spreadsheet import   |
-| `pnpm test:rls`  | Tenant isolation, roles, atomic writes and retry/rollback tests     |
+| `pnpm test`      | Unit tests: members, memberships, import, GST, pay links, Cashfree  |
+| `pnpm test:rls`  | Tenant isolation, roles, atomic writes, retries and billing rules   |
 | `pnpm test:e2e`  | Playwright smoke flows (arrives in M6)                              |
 | `pnpm db:start`  | Start or resume the local Supabase stack                            |
 | `pnpm db:reset`  | Drop and recreate the local database from migrations + seed         |
@@ -52,8 +52,8 @@ app/                 routes: (auth), (app), onboarding, auth/callback, auth/conf
 components/ui        shadcn/ui primitives
 components/<feature> feature UI
 features/<feature>   actions.ts (Server Actions), queries.ts, schema.ts (zod)
-lib/                 copy.ts (all user-facing text), money, gst, upi, dates, phone, errors, env, supabase clients, auth
-supabase/migrations  schema, functions, RLS, dashboard, members and audited writes
+lib/                 copy.ts (all user-facing text), money, gst, upi, dates, phone, errors, env, payments, pdf, supabase clients, auth
+supabase/migrations  schema, functions, RLS, dashboard, members, audited writes and billing
 tests/unit           Vitest unit tests
 tests/rls            Vitest isolation tests (need local Supabase)
 docs/                setup and architecture notes
@@ -68,8 +68,8 @@ See `.env.example`. Every variable is validated at boot (`lib/env.ts`); the app 
 | Milestone | Scope                                                                                 | Status     |
 | --------- | ------------------------------------------------------------------------------------- | ---------- |
 | M0        | Scaffold, tooling, CI, design tokens, shell, auth, gym creation, team roles, RLS, env | Done       |
-| M1        | Plans, members CRUD, memberships, member detail, Excel import                         | Validating |
-| M2        | Invoices, GST, numbering, payments, direct UPI, claims, Razorpay, PDF receipts, Dues  |            |
+| M1        | Plans, members CRUD, memberships, member detail, Excel import                         | Done       |
+| M2        | Invoices, GST, numbering, payments, direct UPI, claims, Cashfree, PDF receipts, Dues  | Validating |
 | M3        | Attendance, QR, kiosk                                                                 |            |
 | M4        | Reminders, WhatsApp providers, templates                                              |            |
 | M5        | Today dashboard, Reports, Expenses, CSV                                               |            |
@@ -78,3 +78,7 @@ See `.env.example`. Every variable is validated at boot (`lib/env.ts`); the app 
 M1 adds search-scoped membership counts and dues, contextual member actions, two-step member creation, private photos, notes, recent activity, renewal/freeze controls, 30-day restore, plan management, and guided spreadsheet import with server-validated duplicate detection. Memberships create unpaid invoices; collection and payment reconciliation arrive in M2.
 
 See [docs/m1-testing.md](docs/m1-testing.md) for setup, validation results and the acceptance checklist. [Competitive research](docs/competitive-research.md) records the observed workflows, source/license limits and original M1 improvements. GYM-One was excluded at the user's request.
+
+M2 adds the Dues screen, invoice detail with the GST breakdown, counter payments with safe retries, reversals and voids, direct UPI QR codes, signed per-invoice pay links where members submit a 12-digit UTR claim, claim review, Cashfree payment links with webhook and manual reconciliation, per-gym payment settings with encrypted Cashfree keys, and one-page PDF tax invoices and receipts.
+
+See [docs/m2-testing.md](docs/m2-testing.md) for setup, validation results, the Cashfree sandbox test and the acceptance checklist.
