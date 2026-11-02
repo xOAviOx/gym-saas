@@ -16,7 +16,13 @@ pnpm install
 pnpm db:start
 ```
 
-`pnpm db:start` creates the containers, applies every file in `supabase/migrations` in order, then runs `supabase/seed.sql`. When it finishes it prints the local URL and keys. You can print them again at any time:
+On the first start, `pnpm db:start` creates the containers, applies every file in `supabase/migrations` in order, then runs `supabase/seed.sql`. Later starts resume the saved database. Apply any new migrations without resetting your data:
+
+```powershell
+pnpm exec supabase migration up --local
+```
+
+The CLI prints the local URL and keys when starting. You can print them again at any time:
 
 ```powershell
 pnpm exec supabase status -o env
@@ -69,7 +75,7 @@ pnpm dev
 
 Open http://localhost:3000. You are sent to `/sign-in`; create an account with email and password, then follow the three onboarding steps (gym details, plans, first member).
 
-Google sign-in needs an OAuth client configured in Supabase; it is not set up locally, and the button shows a clear message when it is unavailable.
+Google sign-in needs an OAuth client configured in Supabase. It is not configured locally; use email and password for the local acceptance checks.
 
 ## 5. Checks
 
@@ -78,21 +84,27 @@ pnpm lint
 pnpm typecheck
 pnpm test          # unit tests, no database needed
 pnpm test:rls      # tenant isolation tests; needs pnpm db:start
+pnpm format:check
+pnpm build
 ```
 
-`pnpm test:rls` creates two throwaway gyms through the real sign-up path and proves that neither can read or write the other's rows, that function-only tables reject direct writes, and that anonymous requests are refused. It cleans up after itself.
+`pnpm test:rls` creates confirmed test users through the local Auth admin API, signs in with their passwords, and creates two throwaway gyms through the real organization RPC. It checks tenant isolation, staff permissions, atomic member/membership/invoice writes, duplicate-phone races, idempotent retries, rollback, freeze rules, restore limits, and anonymous access. It cleans up its test gyms and users.
+
+The test keys come from the environment or `.env.local`, never hard-coded defaults. Use the local database, not a production project. See [m1-testing.md](m1-testing.md) for UI acceptance steps. M1 needs no additional environment variables.
 
 ## 6. Changing the database
 
-SQL is the source of truth. After editing anything in `supabase/migrations`:
+SQL is the source of truth. Add a new migration rather than changing one that has already been applied. Preserve the current local database:
 
 ```powershell
-pnpm db:reset      # recreate the local database from the migrations and seed
+pnpm exec supabase migration up --local
 pnpm db:types      # regenerate lib/supabase/database.types.ts
 pnpm typecheck
 ```
 
 Commit the regenerated types file. CI starts a fresh Supabase, regenerates the types and fails if the committed file differs.
+
+`pnpm db:reset` is an explicitly destructive alternative for a disposable local database. It deletes existing accounts, gyms and member data before rebuilding from migrations and seed. It is not needed to install M1.
 
 Conventions in the migrations:
 

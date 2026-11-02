@@ -1,5 +1,6 @@
 import { LogOutIcon } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import { PageHeader } from '@/components/shared/page-header';
 import { RolePill } from '@/components/shared/role-pill';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { signOut } from '@/features/auth/actions';
 import { requireOrg } from '@/lib/auth/session';
+import { can } from '@/lib/auth/roles';
 import { copy } from '@/lib/copy';
 import { formatPhone } from '@/lib/phone';
 
@@ -20,6 +22,15 @@ export default async function MorePage() {
     <>
       <PageHeader title={copy.more.title} />
       <div className="grid gap-4">
+        {can.managePlans(ctx.role) ? (
+          <Link
+            href="/settings/plans"
+            className="bg-card flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium"
+          >
+            {copy.plans.manage}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
         <Card>
           <CardHeader>
             <CardTitle>{copy.more.gym}</CardTitle>

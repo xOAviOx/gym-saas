@@ -48,7 +48,7 @@ function useFormField() {
     throw new Error('useFormField should be used within <FormField>');
   }
 
-  const { id } = itemContext;
+  const { id, hasDescription } = itemContext;
 
   return {
     id,
@@ -56,21 +56,30 @@ function useFormField() {
     formItemId: `${id}-form-item`,
     formDescriptionId: `${id}-form-item-description`,
     formMessageId: `${id}-form-item-message`,
+    hasDescription,
     ...fieldState,
   };
 }
 
 type FormItemContextValue = {
   id: string;
+  hasDescription: boolean;
 };
 
 const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
 
-function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
+function FormItem({
+  className,
+  hasDescription = false,
+  ...props
+}: React.ComponentProps<'div'> & {
+  /** Set only when this field renders FormDescription. */
+  hasDescription?: boolean;
+}) {
   const id = React.useId();
 
   return (
-    <FormItemContext.Provider value={{ id }}>
+    <FormItemContext.Provider value={{ id, hasDescription }}>
       <div data-slot="form-item" className={cn('grid gap-1.5', className)} {...props} />
     </FormItemContext.Provider>
   );
@@ -91,13 +100,17 @@ function FormLabel({ className, ...props }: React.ComponentProps<typeof Label>) 
 }
 
 function FormControl({ ...props }: React.ComponentProps<typeof Slot.Root>) {
-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
+  const { error, formItemId, formDescriptionId, formMessageId, hasDescription } = useFormField();
+  const describedBy =
+    [hasDescription ? formDescriptionId : null, error ? formMessageId : null]
+      .filter(Boolean)
+      .join(' ') || undefined;
 
   return (
     <Slot.Root
       data-slot="form-control"
       id={formItemId}
-      aria-describedby={!error ? formDescriptionId : `${formDescriptionId} ${formMessageId}`}
+      aria-describedby={describedBy}
       aria-invalid={!!error}
       {...props}
     />

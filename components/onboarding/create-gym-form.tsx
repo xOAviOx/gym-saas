@@ -81,7 +81,7 @@ export function CreateGymForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6" noValidate>
+      <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6" noValidate>
         <section className="grid gap-4">
           <FormField
             control={form.control}
@@ -118,7 +118,7 @@ export function CreateGymForm() {
               control={form.control}
               name="phone"
               render={({ field }) => (
-                <FormItem>
+                <FormItem hasDescription>
                   <FormLabel>{t.phone}</FormLabel>
                   <FormControl>
                     <Input
@@ -143,7 +143,7 @@ export function CreateGymForm() {
             control={form.control}
             name="upiVpa"
             render={({ field }) => (
-              <FormItem>
+              <FormItem hasDescription>
                 <FormLabel>{t.upiVpa}</FormLabel>
                 <FormControl>
                   <Input
@@ -180,7 +180,7 @@ export function CreateGymForm() {
             control={form.control}
             name="gstEnabled"
             render={({ field }) => (
-              <FormItem>
+              <FormItem hasDescription>
                 <div className="flex items-start justify-between gap-4">
                   <div className="grid gap-1">
                     <FormLabel>{t.gstEnabled}</FormLabel>
@@ -220,7 +220,7 @@ export function CreateGymForm() {
           control={form.control}
           name="invoicePrefix"
           render={({ field }) => (
-            <FormItem>
+            <FormItem hasDescription>
               <FormLabel>{t.invoicePrefix}</FormLabel>
               <FormControl>
                 <Input

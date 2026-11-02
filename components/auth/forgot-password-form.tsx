@@ -49,7 +49,7 @@ export function ForgotPasswordForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
+      <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
         <FormField
           control={form.control}
           name="email"

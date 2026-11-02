@@ -60,7 +60,7 @@ export function PlansForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
+      <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
         <ul className="grid gap-3">
           {fields.map((row, index) => (
             <li key={row.id} className="bg-card grid gap-3 rounded-xl border p-4">

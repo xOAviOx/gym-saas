@@ -161,7 +161,7 @@ export async function runAction<T>(fn: () => Promise<T>): Promise<ActionResult<T
 }
 
 /** Throws the mapped error for a Supabase `{ data, error }` response. */
-export function unwrap<T>(response: { data: T | null; error: unknown }): T {
+export function unwrap<T>(response: { data: T | null; error: unknown }): NonNullable<T> {
   if (response.error) {
     throw toActionError(response.error);
   }

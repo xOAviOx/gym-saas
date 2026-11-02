@@ -57,7 +57,8 @@ const nextConfig: NextConfig = {
     : undefined,
   experimental: {
     serverActions: {
-      bodySizeLimit: '5mb',
+      // Leave room for multipart metadata; individual image uploads are capped at 5 MB.
+      bodySizeLimit: '6mb',
     },
   },
   async headers() {

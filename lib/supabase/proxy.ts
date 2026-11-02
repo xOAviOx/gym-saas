@@ -28,7 +28,22 @@ export function safeNextPath(value: string | null | undefined, fallback = '/toda
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
     return fallback;
   }
-  return value;
+  const origin = 'https://gymdesk.invalid';
+  try {
+    const destination = new URL(value, origin);
+    if (destination.origin !== origin) {
+      return fallback;
+    }
+    return `${destination.pathname}${destination.search}${destination.hash}`;
+  } catch {
+    return fallback;
+  }
+}
+
+function redirectWithCookies(destination: URL, sessionResponse: NextResponse): NextResponse {
+  const response = NextResponse.redirect(destination);
+  sessionResponse.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
+  return response;
 }
 
 /**
@@ -53,10 +68,10 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     },
   });
 
-  // getClaims() validates the JWT and refreshes it when needed; it must run
-  // before any early return so the refreshed cookie is always written.
-  const { data } = await supabase.auth.getClaims();
-  const userId = data?.claims.sub ?? null;
+  // A signed JWT can outlive a deleted account. Use the same verified-user
+  // check as page guards, and retain refreshed cookies on redirect responses.
+  const { data, error } = await supabase.auth.getUser();
+  const userId = error ? null : (data.user?.id ?? null);
 
   const { pathname, search } = request.nextUrl;
 
@@ -67,14 +82,12 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     if (pathname !== '/') {
       url.searchParams.set('next', `${pathname}${search}`);
     }
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url, response);
   }
 
   if (userId && matches(pathname, AUTH_PAGES)) {
-    const url = request.nextUrl.clone();
-    url.pathname = safeNextPath(request.nextUrl.searchParams.get('next'));
-    url.search = '';
-    return NextResponse.redirect(url);
+    const url = new URL(safeNextPath(request.nextUrl.searchParams.get('next')), request.url);
+    return redirectWithCookies(url, response);
   }
 
   return response;

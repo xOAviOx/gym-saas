@@ -41,6 +41,23 @@ export const savePlansSchema = z.strictObject({
 
 export type SavePlansInput = z.input<typeof savePlansSchema>;
 
+export const planSchema = z
+  .strictObject({
+    planId: z.uuid().optional(),
+    name: onboardingPlanSchema.shape.name,
+    type: z.enum(['duration', 'sessions']),
+    durationDays: onboardingPlanSchema.shape.durationDays,
+    sessionCount: z.number().int().min(1).max(1000).nullable(),
+    price: moneyInputSchema,
+    description: z.string().trim().max(500, copy.validation.tooLong(500)),
+    isActive: z.boolean(),
+  })
+  .refine((v) => v.type !== 'sessions' || v.sessionCount !== null, {
+    path: ['sessionCount'],
+    message: copy.validation.required,
+  });
+export type PlanInput = z.input<typeof planSchema>;
+
 export const DEFAULT_PLANS: SavePlansInput['plans'] = [
   { name: copy.onboarding.plans.defaults.monthly, durationDays: 30, price: '1500' },
   { name: copy.onboarding.plans.defaults.quarterly, durationDays: 90, price: '4000' },

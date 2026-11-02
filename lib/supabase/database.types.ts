@@ -47,6 +47,12 @@ isOneToOne: false
       foreignKeyName: "check_ins_member_id_fkey"
       columns: ["member_id"]
 isOneToOne: false
+      referencedRelation: "member_directory"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "check_ins_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
       referencedRelation: "members"
       referencedColumns: ["id"]
     },{
@@ -92,6 +98,12 @@ isOneToOne: false
       columns: ["invoice_id"]
 isOneToOne: false
       referencedRelation: "invoices"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "collection_requests_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "member_directory"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "collection_requests_member_id_fkey"
@@ -227,8 +239,20 @@ isOneToOne: false
       foreignKeyName: "invoices_member_id_fkey"
       columns: ["member_id"]
 isOneToOne: false
+      referencedRelation: "member_directory"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invoices_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
       referencedRelation: "members"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invoices_membership_id_fkey"
+      columns: ["membership_id"]
+isOneToOne: false
+      referencedRelation: "member_directory"
+      referencedColumns: ["membership_id"]
     },{
       foreignKeyName: "invoices_membership_id_fkey"
       columns: ["membership_id"]
@@ -271,20 +295,26 @@ isOneToOne: false
       foreignKeyName: "members_referred_by_member_id_fkey"
       columns: ["referred_by_member_id"]
 isOneToOne: false
+      referencedRelation: "member_directory"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "members_referred_by_member_id_fkey"
+      columns: ["referred_by_member_id"]
+isOneToOne: false
       referencedRelation: "members"
       referencedColumns: ["id"]
     }
                   ]
                 },"memberships": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"discount_amount": number,"end_date": string,"final_amount": number,"freeze_days_used": number,"frozen_from": string | null,"frozen_to": string | null,"id": string,"list_price": number,"member_id": string,"notes": string | null,"org_id": string,"plan_id": string,"sessions_total": number | null,"sessions_used": number,"start_date": string,"status": Database["public"]['Enums']["membership_status"],"updated_at": string
+                    "created_at": string,"created_by": string | null,"discount_amount": number,"end_date": string,"final_amount": number,"freeze_days_used": number,"frozen_from": string | null,"frozen_to": string | null,"id": string,"list_price": number,"member_id": string,"notes": string | null,"org_id": string,"plan_id": string,"request_id": string | null,"sessions_total": number | null,"sessions_used": number,"start_date": string,"status": Database["public"]['Enums']["membership_status"],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"discount_amount"?: number,"end_date": string,"final_amount": number,"freeze_days_used"?: number,"frozen_from"?: string | null,"frozen_to"?: string | null,"id"?: string,"list_price": number,"member_id": string,"notes"?: string | null,"org_id": string,"plan_id": string,"sessions_total"?: number | null,"sessions_used"?: number,"start_date": string,"status"?: Database["public"]['Enums']["membership_status"],"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"discount_amount"?: number,"end_date": string,"final_amount": number,"freeze_days_used"?: number,"frozen_from"?: string | null,"frozen_to"?: string | null,"id"?: string,"list_price": number,"member_id": string,"notes"?: string | null,"org_id": string,"plan_id": string,"request_id"?: string | null,"sessions_total"?: number | null,"sessions_used"?: number,"start_date": string,"status"?: Database["public"]['Enums']["membership_status"],"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"discount_amount"?: number,"end_date"?: string,"final_amount"?: number,"freeze_days_used"?: number,"frozen_from"?: string | null,"frozen_to"?: string | null,"id"?: string,"list_price"?: number,"member_id"?: string,"notes"?: string | null,"org_id"?: string,"plan_id"?: string,"sessions_total"?: number | null,"sessions_used"?: number,"start_date"?: string,"status"?: Database["public"]['Enums']["membership_status"],"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"discount_amount"?: number,"end_date"?: string,"final_amount"?: number,"freeze_days_used"?: number,"frozen_from"?: string | null,"frozen_to"?: string | null,"id"?: string,"list_price"?: number,"member_id"?: string,"notes"?: string | null,"org_id"?: string,"plan_id"?: string,"request_id"?: string | null,"sessions_total"?: number | null,"sessions_used"?: number,"start_date"?: string,"status"?: Database["public"]['Enums']["membership_status"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -292,6 +322,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "team_members"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "memberships_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "member_directory"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "memberships_member_id_fkey"
@@ -330,6 +366,12 @@ isOneToOne: false
       columns: ["invoice_id"]
 isOneToOne: false
       referencedRelation: "invoices"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "message_logs_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "member_directory"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "message_logs_member_id_fkey"
@@ -407,6 +449,12 @@ isOneToOne: false
       foreignKeyName: "payment_claims_member_id_fkey"
       columns: ["member_id"]
 isOneToOne: false
+      referencedRelation: "member_directory"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payment_claims_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
       referencedRelation: "members"
       referencedColumns: ["id"]
     },{
@@ -452,6 +500,12 @@ isOneToOne: false
       columns: ["invoice_id"]
 isOneToOne: false
       referencedRelation: "invoices"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payments_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "member_directory"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "payments_member_id_fkey"
@@ -506,6 +560,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "portal_tokens_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "member_directory"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "portal_tokens_member_id_fkey"
       columns: ["member_id"]
 isOneToOne: false
@@ -596,7 +656,21 @@ isOneToOne: false
                 }
           }
           Views: {
-            [_ in never]: never
+            "member_directory": {
+                  Row: {
+                    "balance_due": number | null,"deleted_at": string | null,"end_date": string | null,"full_name": string,"id": string,"member_code": string,"membership_id": string | null,"org_id": string,"phone": string,"plan_name": string | null,"start_date": string | null,"status": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "members_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                }
           }
           Functions: {
             "accept_invitation":
@@ -639,6 +713,7 @@ isOneToOne: false
 "notes": string | null,
 "org_id": string,
 "plan_id": string,
+"request_id": string | null,
 "sessions_total": number | null,
 "sessions_used": number,
 "start_date": string,
@@ -732,6 +807,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"create_member":
+{ Args: { "p_data": Json,"p_member_id": string,"p_membership"?: Json,"p_org": string }; Returns: string
+                           },
 "create_membership":
 { Args: { "p_discount_amount"?: number,"p_member_id": string,"p_notes"?: string,"p_plan_id": string,"p_start_date": string }; Returns: Json
                            },
@@ -776,6 +854,12 @@ isOneToOne: false
 "dashboard_stats":
 { Args: { "p_org": string }; Returns: Json
                            },
+"effective_membership_end":
+{ Args: { "m": Omit<Database["public"]['Tables']["memberships"]['Row'], Database["public"]['Tables']["memberships"]['ComputedFields']>,"p_today": string }; Returns: string
+                           },
+"enroll_member":
+{ Args: { "p_discount_amount": number,"p_member_id": string,"p_notes"?: string,"p_org": string,"p_plan_id": string,"p_request_id": string,"p_start_date": string }; Returns: Json
+                           },
 "fiscal_year_label":
 { Args: { "p_date": string }; Returns: string
                            },
@@ -795,6 +879,7 @@ isOneToOne: false
 "notes": string | null,
 "org_id": string,
 "plan_id": string,
+"request_id": string | null,
 "sessions_total": number | null,
 "sessions_used": number,
 "start_date": string,
@@ -810,6 +895,9 @@ isOneToOne: false
 "has_org_role":
 { Args: { "p_org": string,"p_roles": (Database["public"]['Enums']["team_role"])[] }; Returns: boolean
                            },
+"import_members":
+{ Args: { "p_org": string,"p_rows": Json }; Returns: Json
+                           },
 "is_org_member":
 { Args: { "p_org": string }; Returns: boolean
                            },
@@ -822,6 +910,42 @@ isOneToOne: false
 "ist_today":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"list_members":
+{ Args: { "p_filter"?: string,"p_org": string,"p_page"?: number,"p_page_size"?: number,"p_search"?: string }; Returns: Json
+                           },
+"member_data_record":
+{ Args: { "p_base": Omit<Database["public"]['Tables']["members"]['Row'], Database["public"]['Tables']["members"]['ComputedFields']>,"p_data": Json }; Returns: {
+              "address": string | null,
+"alt_phone": string | null,
+"consent_messaging": boolean,
+"consent_recorded_at": string | null,
+"created_at": string,
+"deleted_at": string | null,
+"dob": string | null,
+"email": string | null,
+"emergency_contact_name": string | null,
+"emergency_contact_phone": string | null,
+"full_name": string,
+"gender": string | null,
+"id": string,
+"joined_on": string,
+"member_code": string,
+"notes": string | null,
+"org_id": string,
+"phone": string,
+"photo_url": string | null,
+"referred_by_member_id": string | null,
+"source": Database["public"]['Enums']["member_source"],
+"status": string,
+"tags": (string)[],
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "my_org_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
@@ -952,6 +1076,12 @@ isOneToOne: false
       } },
 "safe_uuid":
 { Args: { "p": string }; Returns: string
+                           },
+"save_onboarding_plans":
+{ Args: { "p_org": string,"p_plans": Json }; Returns: number
+                           },
+"save_plan":
+{ Args: { "p_data"?: Json,"p_org": string,"p_plan_id"?: string }; Returns: string
                            },
 "schedule_organization_deletion":
 { Args: { "p_org": string }; Returns: {
@@ -1098,6 +1228,7 @@ isOneToOne: false
 "notes": string | null,
 "org_id": string,
 "plan_id": string,
+"request_id": string | null,
 "sessions_total": number | null,
 "sessions_used": number,
 "start_date": string,
@@ -1110,6 +1241,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"update_member":
+{ Args: { "p_data": Json,"p_member_id": string,"p_org": string }; Returns: string
+                           },
 "void_invoice":
 { Args: { "p_invoice_id": string,"p_reason": string }; Returns: {
               "amount_paid": number,
