@@ -12,6 +12,8 @@ const PUBLIC_PREFIXES = [
   '/forgot-password',
   '/auth',
   '/p',
+  // Paired kiosks have no user session; the page checks the device cookie instead.
+  '/kiosk',
   '/privacy',
   '/api',
 ];

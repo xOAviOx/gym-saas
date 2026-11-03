@@ -6,16 +6,16 @@ This file is the entry point for AI agents (or humans) picking up the codebase. 
 
 ## Stack
 
-| Layer        | Choice                                                                              |
-| ------------ | ----------------------------------------------------------------------------------- |
-| Framework    | Next.js 16 (App Router, Server Components, Server Actions), TypeScript strict        |
-| UI           | Tailwind CSS v4, shadcn/ui, lucide-react, Inter with tabular numbers                  |
-| Database     | Supabase (Postgres, Auth, Storage) with row-level security on every table             |
-| Writes       | All multi-step writes are `security definer` SQL functions called over RPC            |
-| Validation   | zod schemas shared between client and server (react-hook-form + `@hookform/resolvers`) |
-| PDF          | `pdf-lib`, generated on the server (`lib/pdf/`)                                      |
-| Tests        | Vitest (unit + RLS isolation), Playwright (smoke flows, arrives in M6)               |
-| CI           | GitHub Actions (`.github/workflows/ci.yml`)                                          |
+| Layer        | Choice                                                                                  |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Framework    | Next.js 16 (App Router, Server Components, Server Actions), TypeScript strict           |
+| UI           | Tailwind CSS v4, shadcn/ui, Phosphor icons, Geist + Instrument Serif headings           |
+| Database     | Supabase (Postgres, Auth, Storage) with row-level security on every table               |
+| Writes       | All multi-step writes are `security definer` SQL functions called over RPC              |
+| Validation   | zod schemas shared between client and server (react-hook-form + `@hookform/resolvers`)  |
+| PDF          | `pdf-lib`, generated on the server (`lib/pdf/`)                                         |
+| Tests        | Vitest (unit + RLS isolation), Playwright (smoke flows, arrives in M6)                  |
+| CI           | GitHub Actions (`.github/workflows/ci.yml`)                                             |
 | Hosting plan | Vercel (Mumbai region) with Vercel Cron for nightly maintenance and 10:00 IST reminders |
 
 ## Commands (pnpm, Node 22+, Docker Desktop for Supabase)
@@ -57,14 +57,14 @@ docs/                setup, architecture and per-milestone validation notes
 
 ## Documentation map
 
-| File                           | Contents                                                                 |
-| ------------------------------ | ------------------------------------------------------------------------ |
-| `README.md`                    | Overview, scripts, milestone table                                        |
+| File                           | Contents                                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| `README.md`                    | Overview, scripts, milestone table                                                          |
 | `docs/architecture.md`         | Request flow, DB design, clients, billing, security headers — read before changing anything |
-| `docs/local-setup.md`          | Full local environment walkthrough and secret generation                   |
-| `docs/m1-testing.md`           | M1 setup, validation results, acceptance checklist                        |
-| `docs/m2-testing.md`           | M2 setup, validation results, Cashfree sandbox test, acceptance checklist  |
-| `docs/competitive-research.md` | Observed workflows from competitor research; GYM-One excluded by user request |
+| `docs/local-setup.md`          | Full local environment walkthrough and secret generation                                    |
+| `docs/m1-testing.md`           | M1 setup, validation results, acceptance checklist                                          |
+| `docs/m2-testing.md`           | M2 setup, validation results, Cashfree sandbox test, acceptance checklist                   |
+| `docs/competitive-research.md` | Observed workflows from competitor research; GYM-One excluded by user request               |
 
 ## Environment variables
 

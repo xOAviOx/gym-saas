@@ -22,21 +22,28 @@ const toneClass: Record<NonNullable<StatTileProps['tone']>, string> = {
 export function StatTile({ label, value, hint, tone = 'default', href, className }: StatTileProps) {
   const body = (
     <>
-      <p className="text-muted-foreground text-sm">{label}</p>
-      <p className={cn('tabular mt-1 text-2xl font-semibold md:text-3xl', toneClass[tone])}>
+      <p className="text-muted-foreground text-[11px] leading-4 font-medium tracking-[0.05em] uppercase">
+        {label}
+      </p>
+      <p
+        className={cn(
+          'tabular mt-3 text-2xl leading-none font-semibold tracking-tight md:text-3xl',
+          toneClass[tone],
+        )}
+      >
         {value}
       </p>
-      {hint ? <p className="text-muted-foreground mt-1 text-xs">{hint}</p> : null}
+      {hint ? <p className="text-muted-foreground mt-2 text-xs">{hint}</p> : null}
     </>
   );
-  const base = cn('bg-card rounded-xl border p-4', className);
+  const base = cn('bg-card border-border rounded-xl border p-4 md:p-5', className);
   if (href) {
     return (
       <Link
         href={href}
         className={cn(
           base,
-          'hover:bg-muted/50 focus-visible:ring-ring block transition-colors focus-visible:ring-2 focus-visible:outline-none',
+          'hover:shadow-lift focus-visible:ring-ring/20 block transition-shadow duration-200 focus-visible:ring-3 focus-visible:outline-none',
         )}
       >
         {body}

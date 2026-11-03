@@ -5,17 +5,17 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all duration-150 ease-out outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,transform] duration-150 ease-out outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 active:not-aria-[haspopup]:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        default: 'bg-primary text-primary-foreground hover:bg-[#333333]',
         outline:
           'border-border bg-card text-foreground hover:bg-muted aria-expanded:bg-muted aria-expanded:text-foreground',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-zinc-200/70',
+        secondary: 'border-border bg-secondary text-secondary-foreground hover:bg-[#eae9e5]',
         ghost: 'hover:bg-muted hover:text-foreground aria-expanded:bg-muted',
         destructive:
-          'bg-danger-soft text-destructive hover:bg-rose-100 focus-visible:border-destructive/40 focus-visible:ring-destructive/20',
+          'bg-danger-soft text-destructive hover:bg-[#fadcdd] focus-visible:border-destructive/40 focus-visible:ring-destructive/20',
         'destructive-solid': 'bg-destructive text-white hover:bg-destructive/90',
         link: 'h-auto px-0 text-primary underline-offset-4 hover:underline',
       },

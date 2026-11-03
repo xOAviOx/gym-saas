@@ -1,10 +1,10 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MailCheckIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { MailCheckIcon } from '@/components/icons';
 import { applyActionResult } from '@/components/shared/apply-action-result';
 import { SubmitButton } from '@/components/shared/submit-button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

@@ -125,7 +125,7 @@ export function RecordPaymentDialog({
                       {METHODS.map(([value, label]) => (
                         <label
                           key={value}
-                          className="has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-success-soft flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 text-sm transition-colors"
+                          className="has-[[data-state=checked]]:border-foreground has-[[data-state=checked]]:bg-muted/60 flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 text-sm transition-colors"
                         >
                           <RadioGroupItem value={value} />
                           {label}

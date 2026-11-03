@@ -1,9 +1,9 @@
 'use client';
 
-import { CheckIcon, CopyIcon } from 'lucide-react';
 import { useState, type ComponentProps } from 'react';
 import { toast } from 'sonner';
 
+import { CheckIcon, CopyIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { copy } from '@/lib/copy';
 

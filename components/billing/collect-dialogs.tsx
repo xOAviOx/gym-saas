@@ -1,9 +1,9 @@
 'use client';
 
-import { QrCodeIcon, Share2Icon } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
+import { QrCodeIcon, Share2Icon } from '@/components/icons';
 import { CopyButton } from '@/components/shared/copy-button';
 import { FormDialog } from '@/components/shared/form-dialog';
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,7 @@ export function UpiQrDialog({
       }
     >
       <div className="grid justify-items-center gap-4 text-center">
-        <div className="rounded-2xl border bg-white p-3">
+        <div className="rounded-xl border bg-white p-3">
           <Image
             src={qr}
             alt={copy.upiCollect.qrAlt(amount)}
@@ -47,7 +47,7 @@ export function UpiQrDialog({
             className="size-64"
           />
         </div>
-        <p className="tabular text-3xl font-semibold">{amount}</p>
+        <p className="tabular text-3xl leading-tight font-semibold tracking-tight">{amount}</p>
         <p className="text-muted-foreground text-sm break-all">
           {copy.upiCollect.payee(payee, vpa)}
         </p>
@@ -91,7 +91,7 @@ export function PayLinkDialog({
             readOnly
             value={url}
             onFocus={(event) => event.currentTarget.select()}
-            className="text-muted-foreground"
+            className="text-muted-foreground font-mono text-sm md:text-xs"
           />
           <p className="text-muted-foreground text-xs">{copy.payLink.expires(expires)}</p>
         </div>

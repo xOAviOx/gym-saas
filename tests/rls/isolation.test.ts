@@ -1198,6 +1198,318 @@ describe('M2 payments, claims, gateway links and dues', () => {
     expect((await anon.from('collection_requests').select('id')).error).not.toBeNull();
   });
 });
+
+describe('M3 attendance, kiosk devices and member QR codes', () => {
+  type Outcome = { result: string; pin_error?: string; overridden?: boolean };
+  const PIN = '4826';
+  let staff: { client: Client; userId: string };
+  let planId: string;
+  let nextPhone = 30000000;
+  const today = todayIST();
+  const tokenHash = () => randomUUID().replace(/-/g, '').repeat(2);
+
+  /** A member with a live membership, or none at all (which counts as expired). */
+  async function member(name: string, active: boolean) {
+    const id = randomUUID();
+    const created = await a.client.rpc('create_member', {
+      p_org: a.orgId,
+      p_member_id: id,
+      p_data: { full_name: name, phone: `+9195${++nextPhone}`, consent_messaging: false },
+      ...(active ? { p_membership: { plan_id: planId, start_date: today } } : {}),
+    });
+    expect(created.error).toBeNull();
+    return id;
+  }
+  async function checkIn(
+    client: Client,
+    memberId: string,
+    extra: { p_override?: boolean; p_pin?: string } = {},
+  ) {
+    const result = await client.rpc('check_in_member', { p_member_id: memberId, ...extra });
+    expect(result.error).toBeNull();
+    return result.data as Outcome;
+  }
+  async function checkInCount(memberId: string) {
+    const rows = await admin.from('check_ins').select('id').eq('member_id', memberId);
+    expect(rows.error).toBeNull();
+    return rows.data!.length;
+  }
+
+  beforeAll(async () => {
+    staff = await signedInClient(`rls-m3-staff-${run}@example.test`, 'Passw0rd!rls');
+    const team = await admin
+      .from('team_members')
+      .insert({ org_id: a.orgId, user_id: staff.userId, role: 'staff' });
+    expect(team.error).toBeNull();
+    const plan = await a.client.rpc('save_plan', {
+      p_org: a.orgId,
+      p_data: {
+        name: 'M3 Monthly',
+        type: 'duration',
+        duration_days: 30,
+        price: 1000,
+        is_active: true,
+      },
+    });
+    expect(plan.error).toBeNull();
+    planId = plan.data!;
+    expect((await a.client.rpc('set_kiosk_pin', { p_org: a.orgId, p_pin: PIN })).error).toBeNull();
+    const settings = await a.client.rpc('save_attendance_settings', {
+      p_org: a.orgId,
+      p_block_expired: true,
+    });
+    expect(settings.error).toBeNull();
+  });
+  afterAll(async () => {
+    if (staff) expect((await admin.auth.admin.deleteUser(staff.userId)).error).toBeNull();
+  });
+
+  it('keeps the PIN hash out of reach and closes direct check-in writes', async () => {
+    const column = await a.client.from('organizations').select('kiosk_pin_hash' as 'id');
+    expect(column.error).not.toBeNull();
+    for (const client of [a.client, staff.client]) {
+      const hidden = await client.from('organization_kiosk').select('*');
+      expect(hidden.data ?? []).toEqual([]);
+    }
+    const stored = await admin.from('organization_kiosk').select('pin_hash').eq('org_id', a.orgId);
+    expect(stored.data?.[0]?.pin_hash).toMatch(/^\$2[aby]\$/);
+    const id = await member('M3 Direct', true);
+    for (const client of [a.client, staff.client]) {
+      const direct = await client
+        .from('check_ins')
+        .insert({ org_id: a.orgId, member_id: id, method: 'manual' });
+      expect(direct.error?.code).toBe('42501');
+    }
+    expect(await checkInCount(id)).toBe(0);
+  });
+
+  it('checks in once per five minutes and refuses another gym', async () => {
+    const id = await member('M3 Active', true);
+    expect((await checkIn(staff.client, id)).result).toBe('checked_in');
+    expect((await checkIn(staff.client, id)).result).toBe('duplicate');
+    expect(await checkInCount(id)).toBe(1);
+    const cross = await a.client.rpc('check_in_member', { p_member_id: b.memberId });
+    expect(cross.error?.message).toBe('member_not_found');
+    const crossStaff = await staff.client.rpc('check_in_member', { p_member_id: b.memberId });
+    expect(crossStaff.error?.message).toBe('member_not_found');
+    expect(await checkInCount(b.memberId)).toBe(0);
+  });
+
+  it('lets owners override a block, but staff only with the right kiosk PIN', async () => {
+    const forOwner = await member('M3 Expired Owner', false);
+    expect(await checkIn(a.client, forOwner)).toMatchObject({ result: 'blocked' });
+    expect(await checkIn(a.client, forOwner, { p_override: true })).toMatchObject({
+      result: 'checked_in',
+      overridden: true,
+    });
+
+    const forStaff = await member('M3 Expired Staff', false);
+    const plain = await checkIn(staff.client, forStaff);
+    expect(plain.result).toBe('blocked');
+    expect(plain.pin_error).toBeUndefined();
+    expect(await checkIn(staff.client, forStaff, { p_override: true })).toMatchObject({
+      result: 'blocked',
+      pin_error: 'pin_required',
+    });
+    expect(
+      await checkIn(staff.client, forStaff, { p_override: true, p_pin: '0000' }),
+    ).toMatchObject({ result: 'blocked', pin_error: 'invalid' });
+    expect(await checkInCount(forStaff)).toBe(0);
+    expect(await checkIn(staff.client, forStaff, { p_override: true, p_pin: PIN })).toMatchObject({
+      result: 'checked_in',
+      overridden: true,
+    });
+    const audit = await admin
+      .from('audit_logs')
+      .select('id')
+      .eq('org_id', a.orgId)
+      .eq('action', 'check_in.override');
+    expect(audit.data?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('locks the PIN after five wrong tries, even for the right PIN', async () => {
+    const id = await member('M3 Lockout', false);
+    const tries: string[] = [];
+    for (let i = 0; i < 5; i++) {
+      tries.push((await checkIn(staff.client, id, { p_override: true, p_pin: '1111' })).pin_error!);
+    }
+    expect(tries).toEqual(['invalid', 'invalid', 'invalid', 'invalid', 'locked']);
+    expect(await checkIn(staff.client, id, { p_override: true, p_pin: PIN })).toMatchObject({
+      result: 'blocked',
+      pin_error: 'locked',
+    });
+    const status = await a.client.rpc('kiosk_pin_status', { p_org: a.orgId });
+    expect(status.error).toBeNull();
+    expect((status.data as { locked_until: string | null }).locked_until).not.toBeNull();
+    // Saving the PIN again is how an owner clears a lockout.
+    expect((await a.client.rpc('set_kiosk_pin', { p_org: a.orgId, p_pin: PIN })).error).toBeNull();
+    expect(await checkIn(staff.client, id, { p_override: true, p_pin: PIN })).toMatchObject({
+      result: 'checked_in',
+    });
+  });
+
+  it('limits attendance settings and kiosk pairing to owners and managers', async () => {
+    for (const call of [
+      staff.client.rpc('set_kiosk_pin', { p_org: a.orgId, p_pin: '9999' }),
+      staff.client.rpc('save_attendance_settings', { p_org: a.orgId, p_block_expired: false }),
+      staff.client.rpc('kiosk_pin_status', { p_org: a.orgId }),
+      staff.client.rpc('create_kiosk_device', {
+        p_org: a.orgId,
+        p_label: 'Staff tablet',
+        p_token_hash: tokenHash(),
+      }),
+      a.client.rpc('set_kiosk_pin', { p_org: b.orgId, p_pin: '9999' }),
+      a.client.rpc('save_attendance_settings', { p_org: b.orgId, p_block_expired: false }),
+    ]) {
+      expect((await call).error?.code).toBe('42501');
+    }
+    const noPin = await b.client.rpc('create_kiosk_device', {
+      p_org: b.orgId,
+      p_label: 'Front desk',
+      p_token_hash: tokenHash(),
+    });
+    expect(noPin.error?.message).toBe('kiosk_pin_required');
+    const settings = await admin
+      .from('organizations')
+      .select('settings')
+      .eq('id', a.orgId)
+      .single();
+    expect(
+      (settings.data?.settings as { block_expired_checkin?: boolean }).block_expired_checkin,
+    ).toBe(true);
+  });
+
+  it('runs paired kiosks through service-role functions only', async () => {
+    const paired = await a.client.rpc('create_kiosk_device', {
+      p_org: a.orgId,
+      p_label: 'Front desk',
+      p_token_hash: tokenHash(),
+    });
+    expect(paired.error).toBeNull();
+    const deviceId = paired.data!.id;
+
+    expect(
+      (await a.client.from('kiosk_devices').select('id').eq('id', deviceId)).data,
+    ).toHaveLength(1);
+    expect((await staff.client.from('kiosk_devices').select('id')).data).toEqual([]);
+    expect((await b.client.from('kiosk_devices').select('id').eq('id', deviceId)).data).toEqual([]);
+    const direct = await a.client
+      .from('kiosk_devices')
+      .insert({ org_id: a.orgId, label: 'Forged', token_hash: tokenHash() });
+    expect(direct.error?.code).toBe('42501');
+
+    const active = await member('M3 Kiosk', true);
+    for (const client of [a.client, staff.client]) {
+      const call = await client.rpc('kiosk_check_in', {
+        p_device_id: deviceId,
+        p_member_id: active,
+      });
+      expect(call.error).not.toBeNull();
+      expect(
+        (await client.rpc('kiosk_exit', { p_device_id: deviceId, p_pin: PIN })).error,
+      ).not.toBeNull();
+    }
+    const ok = await admin.rpc('kiosk_check_in', { p_device_id: deviceId, p_member_id: active });
+    expect(ok.error).toBeNull();
+    expect((ok.data as Outcome).result).toBe('checked_in');
+    const row = await admin
+      .from('check_ins')
+      .select('kiosk_device_id,method')
+      .eq('member_id', active);
+    expect(row.data).toEqual([{ kiosk_device_id: deviceId, method: 'qr' }]);
+    const foreign = await admin.rpc('kiosk_check_in', {
+      p_device_id: deviceId,
+      p_member_id: b.memberId,
+    });
+    expect(foreign.error?.message).toBe('member_not_found');
+
+    const expired = await member('M3 Kiosk Expired', false);
+    const kioskBlocked = await admin.rpc('kiosk_check_in', {
+      p_device_id: deviceId,
+      p_member_id: expired,
+    });
+    expect((kioskBlocked.data as Outcome).result).toBe('blocked');
+    const kioskLetIn = await admin.rpc('kiosk_check_in', {
+      p_device_id: deviceId,
+      p_member_id: expired,
+      p_pin: PIN,
+    });
+    expect(kioskLetIn.data as Outcome).toMatchObject({ result: 'checked_in', overridden: true });
+
+    const wrong = await admin.rpc('kiosk_exit', { p_device_id: deviceId, p_pin: '0000' });
+    expect(wrong.data).toBe('invalid');
+    const exit = await admin.rpc('kiosk_exit', { p_device_id: deviceId, p_pin: PIN });
+    expect(exit.data).toBe('ok');
+    const after = await admin.rpc('kiosk_check_in', { p_device_id: deviceId, p_member_id: active });
+    expect(after.error?.message).toBe('kiosk_not_paired');
+  });
+
+  it('turns off every kiosk when the PIN is removed', async () => {
+    const devices = await Promise.all(
+      ['One', 'Two'].map((label) =>
+        a.client.rpc('create_kiosk_device', {
+          p_org: a.orgId,
+          p_label: label,
+          p_token_hash: tokenHash(),
+        }),
+      ),
+    );
+    for (const device of devices) expect(device.error).toBeNull();
+    const revoked = await a.client.rpc('revoke_kiosk_device', {
+      p_device_id: devices[0]!.data!.id,
+    });
+    expect(revoked.error).toBeNull();
+    const crossRevoke = await b.client.rpc('revoke_kiosk_device', {
+      p_device_id: devices[1]!.data!.id,
+    });
+    expect(crossRevoke.error?.message).toBe('kiosk_device_not_found');
+
+    expect(
+      (await a.client.rpc('set_kiosk_pin', { p_org: a.orgId, p_pin: null as unknown as string }))
+        .error,
+    ).toBeNull();
+    const live = await admin
+      .from('kiosk_devices')
+      .select('id')
+      .eq('org_id', a.orgId)
+      .is('revoked_at', null);
+    expect(live.data).toEqual([]);
+    const status = await a.client.rpc('kiosk_pin_status', { p_org: a.orgId });
+    expect((status.data as { pin_set: boolean }).pin_set).toBe(false);
+    expect((await a.client.rpc('set_kiosk_pin', { p_org: a.orgId, p_pin: PIN })).error).toBeNull();
+  });
+
+  it('issues a new member QR version inside the gym only', async () => {
+    const id = await member('M3 QR', true);
+    const reset = await staff.client.rpc('reset_member_qr', { p_member_id: id });
+    expect(reset.error).toBeNull();
+    expect(reset.data).toBe(2);
+    const stored = await admin.from('members').select('qr_version').eq('id', id).single();
+    expect(stored.data?.qr_version).toBe(2);
+    const cross = await a.client.rpc('reset_member_qr', { p_member_id: b.memberId });
+    expect(cross.error?.message).toBe('member_not_found');
+    const foreign = await admin.from('members').select('qr_version').eq('id', b.memberId).single();
+    expect(foreign.data?.qr_version).toBe(1);
+  });
+
+  it('does not expose attendance functions to anonymous users', async () => {
+    const anon = createClient<Database>(SUPABASE_URL, ANON_KEY, {
+      auth: { persistSession: false },
+    });
+    const memberId = randomUUID();
+    const calls = [
+      anon.rpc('check_in_member', { p_member_id: memberId }),
+      anon.rpc('kiosk_check_in', { p_device_id: randomUUID(), p_member_id: memberId }),
+      anon.rpc('kiosk_exit', { p_device_id: randomUUID(), p_pin: PIN }),
+      anon.rpc('kiosk_pin_status', { p_org: a.orgId }),
+      anon.rpc('reset_member_qr', { p_member_id: memberId }),
+    ];
+    for (const call of calls) expect((await call).error).not.toBeNull();
+    expect((await anon.from('kiosk_devices').select('id')).error).not.toBeNull();
+    expect((await anon.from('check_ins').select('id')).error).not.toBeNull();
+  });
+});
+
 type Tenant = {
   client: Client;
   userId: string;

@@ -4,8 +4,7 @@ import {
   IndianRupeeIcon,
   RotateCcwIcon,
   UserRoundIcon,
-} from 'lucide-react';
-
+} from '@/components/icons';
 import type { MemberActivityItem } from '@/features/members/activity';
 import { copy } from '@/lib/copy';
 import { formatDateTime } from '@/lib/dates';
@@ -20,7 +19,10 @@ const icons = {
 
 export function MemberActivity({ items }: { items: MemberActivityItem[] }) {
   return (
-    <section aria-labelledby="member-activity-title" className="bg-card mt-6 rounded-xl border p-5">
+    <section
+      aria-labelledby="member-activity-title"
+      className="bg-card mt-6 rounded-xl border p-5 md:p-6"
+    >
       <h2 id="member-activity-title" className="text-base font-semibold">
         {copy.members.recentActivity}
       </h2>
@@ -30,7 +32,7 @@ export function MemberActivity({ items }: { items: MemberActivityItem[] }) {
           const Icon = icons[item.kind];
           return (
             <li key={item.id} className="flex gap-3">
-              <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
+              <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
                 <Icon aria-hidden="true" className="size-4" />
               </span>
               <div className="min-w-0">

@@ -10,8 +10,12 @@ export default async function OnboardingLayout({ children }: { children: ReactNo
   await requireUser();
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="flex items-center justify-between px-4 py-3 md:px-8">
+    <div className="relative isolate flex min-h-dvh flex-col">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(196,140,64,0.05),transparent_70%)]"
+      />
+      <header className="border-border flex items-center justify-between border-b px-4 py-3 md:px-8">
         <div className="flex items-center gap-2.5">
           <BrandMark />
           <span className="text-base font-semibold tracking-tight">{APP_NAME}</span>

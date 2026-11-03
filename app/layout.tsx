@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Geist, Geist_Mono, Instrument_Serif } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { Toaster } from '@/components/ui/sonner';
@@ -9,9 +9,22 @@ import { cn } from '@/lib/utils';
 
 import './globals.css';
 
-const inter = Inter({
+const geistSans = Geist({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-geist-sans',
+  display: 'swap',
+});
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
+  display: 'swap',
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-instrument-serif',
   display: 'swap',
 });
 
@@ -28,12 +41,15 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#fafafa',
+  themeColor: '#fbfbfa',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={cn(inter.variable)}>
+    <html
+      lang="en"
+      className={cn(geistSans.variable, geistMono.variable, instrumentSerif.variable)}
+    >
       <body>
         <TooltipProvider delayDuration={300}>{children}</TooltipProvider>
         <Toaster />

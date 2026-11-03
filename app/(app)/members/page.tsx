@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { PlusIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
+import { PlusIcon } from '@/components/icons';
 import { MemberDirectory } from '@/components/members/member-directory';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -64,7 +64,7 @@ export default async function MembersPage({
       />
       <Link
         href="/members/import"
-        className="text-primary mt-5 inline-flex min-h-11 items-center text-sm"
+        className="text-foreground decoration-input mt-5 inline-flex min-h-11 items-center text-sm underline underline-offset-4 hover:decoration-current"
       >
         {copy.members.import}
       </Link>

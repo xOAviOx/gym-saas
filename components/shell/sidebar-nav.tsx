@@ -23,10 +23,10 @@ export function SidebarNav() {
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'focus-visible:ring-ring/40 flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150 outline-none focus-visible:ring-3',
+                  'focus-visible:ring-ring/20 flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors duration-150 outline-none focus-visible:ring-3',
                   active
-                    ? 'bg-success-soft text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    ? 'bg-muted text-foreground'
+                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                 )}
               >
                 <Icon className="size-5" aria-hidden="true" />

@@ -62,7 +62,7 @@ export function SignInForm({ next }: { next?: string }) {
                 <FormLabel>{copy.auth.password}</FormLabel>
                 <Link
                   href="/forgot-password"
-                  className="text-primary text-sm underline-offset-4 hover:underline"
+                  className="text-foreground decoration-input text-sm underline underline-offset-4 hover:decoration-current"
                 >
                   {copy.auth.forgotPassword}
                 </Link>

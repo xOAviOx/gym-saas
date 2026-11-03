@@ -27,14 +27,14 @@ isOneToOne: false
                   ]
                 },"check_ins": {
                   Row: {
-                    "checked_in_at": string,"checked_in_by": string | null,"created_at": string,"flag": Database["public"]['Enums']["check_in_flag"] | null,"id": string,"member_id": string,"method": Database["public"]['Enums']["check_in_method"],"org_id": string,"override_by": string | null,"updated_at": string
+                    "checked_in_at": string,"checked_in_by": string | null,"created_at": string,"flag": Database["public"]['Enums']["check_in_flag"] | null,"id": string,"kiosk_device_id": string | null,"member_id": string,"method": Database["public"]['Enums']["check_in_method"],"org_id": string,"overridden": boolean,"override_by": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "checked_in_at"?: string,"checked_in_by"?: string | null,"created_at"?: string,"flag"?: Database["public"]['Enums']["check_in_flag"] | null,"id"?: string,"member_id": string,"method"?: Database["public"]['Enums']["check_in_method"],"org_id": string,"override_by"?: string | null,"updated_at"?: string
+                    "checked_in_at"?: string,"checked_in_by"?: string | null,"created_at"?: string,"flag"?: Database["public"]['Enums']["check_in_flag"] | null,"id"?: string,"kiosk_device_id"?: string | null,"member_id": string,"method"?: Database["public"]['Enums']["check_in_method"],"org_id": string,"overridden"?: boolean,"override_by"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "checked_in_at"?: string,"checked_in_by"?: string | null,"created_at"?: string,"flag"?: Database["public"]['Enums']["check_in_flag"] | null,"id"?: string,"member_id"?: string,"method"?: Database["public"]['Enums']["check_in_method"],"org_id"?: string,"override_by"?: string | null,"updated_at"?: string
+                    "checked_in_at"?: string,"checked_in_by"?: string | null,"created_at"?: string,"flag"?: Database["public"]['Enums']["check_in_flag"] | null,"id"?: string,"kiosk_device_id"?: string | null,"member_id"?: string,"method"?: Database["public"]['Enums']["check_in_method"],"org_id"?: string,"overridden"?: boolean,"override_by"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -42,6 +42,12 @@ isOneToOne: false
       columns: ["checked_in_by"]
 isOneToOne: false
       referencedRelation: "team_members"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "check_ins_kiosk_device_id_fkey"
+      columns: ["kiosk_device_id"]
+isOneToOne: false
+      referencedRelation: "kiosk_devices"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "check_ins_member_id_fkey"
@@ -293,16 +299,42 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"members": {
+                },"kiosk_devices": {
                   Row: {
-                    "address": string | null,"alt_phone": string | null,"consent_messaging": boolean,"consent_recorded_at": string | null,"created_at": string,"deleted_at": string | null,"dob": string | null,"email": string | null,"emergency_contact_name": string | null,"emergency_contact_phone": string | null,"full_name": string,"gender": string | null,"id": string,"joined_on": string,"member_code": string,"notes": string | null,"org_id": string,"phone": string,"photo_url": string | null,"referred_by_member_id": string | null,"source": Database["public"]['Enums']["member_source"],"status": string,"tags": (string)[],"updated_at": string
+                    "created_at": string,"created_by": string | null,"id": string,"label": string,"last_seen_at": string | null,"org_id": string,"revoked_at": string | null,"token_hash": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"alt_phone"?: string | null,"consent_messaging"?: boolean,"consent_recorded_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"dob"?: string | null,"email"?: string | null,"emergency_contact_name"?: string | null,"emergency_contact_phone"?: string | null,"full_name": string,"gender"?: string | null,"id"?: string,"joined_on"?: string,"member_code"?: string,"notes"?: string | null,"org_id": string,"phone": string,"photo_url"?: string | null,"referred_by_member_id"?: string | null,"source"?: Database["public"]['Enums']["member_source"],"status"?: string,"tags"?: (string)[],"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"label": string,"last_seen_at"?: string | null,"org_id": string,"revoked_at"?: string | null,"token_hash": string,"updated_at"?: string
                   }
                   Update: {
-                    "address"?: string | null,"alt_phone"?: string | null,"consent_messaging"?: boolean,"consent_recorded_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"dob"?: string | null,"email"?: string | null,"emergency_contact_name"?: string | null,"emergency_contact_phone"?: string | null,"full_name"?: string,"gender"?: string | null,"id"?: string,"joined_on"?: string,"member_code"?: string,"notes"?: string | null,"org_id"?: string,"phone"?: string,"photo_url"?: string | null,"referred_by_member_id"?: string | null,"source"?: Database["public"]['Enums']["member_source"],"status"?: string,"tags"?: (string)[],"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"label"?: string,"last_seen_at"?: string | null,"org_id"?: string,"revoked_at"?: string | null,"token_hash"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "kiosk_devices_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "team_members"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kiosk_devices_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"members": {
+                  Row: {
+                    "address": string | null,"alt_phone": string | null,"consent_messaging": boolean,"consent_recorded_at": string | null,"created_at": string,"deleted_at": string | null,"dob": string | null,"email": string | null,"emergency_contact_name": string | null,"emergency_contact_phone": string | null,"full_name": string,"gender": string | null,"id": string,"joined_on": string,"member_code": string,"notes": string | null,"org_id": string,"phone": string,"photo_url": string | null,"qr_version": number,"referred_by_member_id": string | null,"source": Database["public"]['Enums']["member_source"],"status": string,"tags": (string)[],"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address"?: string | null,"alt_phone"?: string | null,"consent_messaging"?: boolean,"consent_recorded_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"dob"?: string | null,"email"?: string | null,"emergency_contact_name"?: string | null,"emergency_contact_phone"?: string | null,"full_name": string,"gender"?: string | null,"id"?: string,"joined_on"?: string,"member_code"?: string,"notes"?: string | null,"org_id": string,"phone": string,"photo_url"?: string | null,"qr_version"?: number,"referred_by_member_id"?: string | null,"source"?: Database["public"]['Enums']["member_source"],"status"?: string,"tags"?: (string)[],"updated_at"?: string
+                  }
+                  Update: {
+                    "address"?: string | null,"alt_phone"?: string | null,"consent_messaging"?: boolean,"consent_recorded_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"dob"?: string | null,"email"?: string | null,"emergency_contact_name"?: string | null,"emergency_contact_phone"?: string | null,"full_name"?: string,"gender"?: string | null,"id"?: string,"joined_on"?: string,"member_code"?: string,"notes"?: string | null,"org_id"?: string,"phone"?: string,"photo_url"?: string | null,"qr_version"?: number,"referred_by_member_id"?: string | null,"source"?: Database["public"]['Enums']["member_source"],"status"?: string,"tags"?: (string)[],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -413,6 +445,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"organization_kiosk": {
+                  Row: {
+                    "created_at": string,"failed_attempts": number,"locked_until": string | null,"org_id": string,"pin_hash": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"failed_attempts"?: number,"locked_until"?: string | null,"org_id": string,"pin_hash"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"failed_attempts"?: number,"locked_until"?: string | null,"org_id"?: string,"pin_hash"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "organization_kiosk_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: true
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"organization_secrets": {
                   Row: {
                     "cashfree_app_id": string | null,"cashfree_environment": string | null,"cashfree_secret_key_enc": string | null,"cashfree_verified_at": string | null,"created_at": string,"org_id": string,"razorpay_key_id": string | null,"razorpay_key_secret_enc": string | null,"razorpay_webhook_secret_enc": string | null,"updated_at": string,"whatsapp_access_token_enc": string | null,"whatsapp_phone_number_id": string | null
@@ -435,14 +487,14 @@ isOneToOne: true
                   ]
                 },"organizations": {
                   Row: {
-                    "address_line": string | null,"city": string | null,"created_at": string,"default_collection_mode": Database["public"]['Enums']["collection_mode"],"deletion_scheduled_for": string | null,"email": string | null,"gst_enabled": boolean,"gst_rate": number,"gstin": string | null,"id": string,"invoice_prefix": string,"kiosk_pin_hash": string | null,"logo_url": string | null,"name": string,"phone": string | null,"pincode": string | null,"settings": NonNullable<Json>,"state": string | null,"timezone": string,"updated_at": string,"upi_payee_name": string | null,"upi_vpa": string | null,"vertical": string
+                    "address_line": string | null,"city": string | null,"created_at": string,"default_collection_mode": Database["public"]['Enums']["collection_mode"],"deletion_scheduled_for": string | null,"email": string | null,"gst_enabled": boolean,"gst_rate": number,"gstin": string | null,"id": string,"invoice_prefix": string,"logo_url": string | null,"name": string,"phone": string | null,"pincode": string | null,"settings": NonNullable<Json>,"state": string | null,"timezone": string,"updated_at": string,"upi_payee_name": string | null,"upi_vpa": string | null,"vertical": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "address_line"?: string | null,"city"?: string | null,"created_at"?: string,"default_collection_mode"?: Database["public"]['Enums']["collection_mode"],"deletion_scheduled_for"?: string | null,"email"?: string | null,"gst_enabled"?: boolean,"gst_rate"?: number,"gstin"?: string | null,"id"?: string,"invoice_prefix": string,"kiosk_pin_hash"?: string | null,"logo_url"?: string | null,"name": string,"phone"?: string | null,"pincode"?: string | null,"settings"?: NonNullable<Json>,"state"?: string | null,"timezone"?: string,"updated_at"?: string,"upi_payee_name"?: string | null,"upi_vpa"?: string | null,"vertical"?: string
+                    "address_line"?: string | null,"city"?: string | null,"created_at"?: string,"default_collection_mode"?: Database["public"]['Enums']["collection_mode"],"deletion_scheduled_for"?: string | null,"email"?: string | null,"gst_enabled"?: boolean,"gst_rate"?: number,"gstin"?: string | null,"id"?: string,"invoice_prefix": string,"logo_url"?: string | null,"name": string,"phone"?: string | null,"pincode"?: string | null,"settings"?: NonNullable<Json>,"state"?: string | null,"timezone"?: string,"updated_at"?: string,"upi_payee_name"?: string | null,"upi_vpa"?: string | null,"vertical"?: string
                   }
                   Update: {
-                    "address_line"?: string | null,"city"?: string | null,"created_at"?: string,"default_collection_mode"?: Database["public"]['Enums']["collection_mode"],"deletion_scheduled_for"?: string | null,"email"?: string | null,"gst_enabled"?: boolean,"gst_rate"?: number,"gstin"?: string | null,"id"?: string,"invoice_prefix"?: string,"kiosk_pin_hash"?: string | null,"logo_url"?: string | null,"name"?: string,"phone"?: string | null,"pincode"?: string | null,"settings"?: NonNullable<Json>,"state"?: string | null,"timezone"?: string,"updated_at"?: string,"upi_payee_name"?: string | null,"upi_vpa"?: string | null,"vertical"?: string
+                    "address_line"?: string | null,"city"?: string | null,"created_at"?: string,"default_collection_mode"?: Database["public"]['Enums']["collection_mode"],"deletion_scheduled_for"?: string | null,"email"?: string | null,"gst_enabled"?: boolean,"gst_rate"?: number,"gstin"?: string | null,"id"?: string,"invoice_prefix"?: string,"logo_url"?: string | null,"name"?: string,"phone"?: string | null,"pincode"?: string | null,"settings"?: NonNullable<Json>,"state"?: string | null,"timezone"?: string,"updated_at"?: string,"upi_payee_name"?: string | null,"upi_vpa"?: string | null,"vertical"?: string
                   }
                   Relationships: [
                     
@@ -694,6 +746,9 @@ isOneToOne: false
               "fiscal_year": string,"invoice_number": string
             }[]
                            },
+"apply_check_in":
+{ Args: { "p_actor": string,"p_device": string,"p_member_id": string,"p_method": Database["public"]['Enums']["check_in_method"],"p_org": string,"p_override": boolean,"p_pin": string,"p_role_may_override": boolean }; Returns: Json
+                           },
 "apply_payment":
 { Args: { "p_amount": number,"p_collection_request_id": string,"p_gateway_payment_id": string,"p_invoice_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_paid_at": string,"p_reference": string,"p_request_id": string,"p_utr": string }; Returns: {
               "amount": number,
@@ -766,7 +821,6 @@ isOneToOne: false
 "gstin": string | null,
 "id": string,
 "invoice_prefix": string,
-"kiosk_pin_hash": string | null,
 "logo_url": string | null,
 "name": string,
 "phone": string | null,
@@ -802,7 +856,7 @@ isOneToOne: false
         isSetofReturn: false
       } },
 "check_in_member":
-{ Args: { "p_member_id": string,"p_method"?: Database["public"]['Enums']["check_in_method"],"p_override"?: boolean }; Returns: Json
+{ Args: { "p_member_id": string,"p_method"?: Database["public"]['Enums']["check_in_method"],"p_override"?: boolean,"p_pin"?: string }; Returns: Json
                            },
 "check_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
@@ -859,6 +913,24 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"create_kiosk_device":
+{ Args: { "p_label": string,"p_org": string,"p_token_hash": string }; Returns: {
+              "created_at": string,
+"created_by": string | null,
+"id": string,
+"label": string,
+"last_seen_at": string | null,
+"org_id": string,
+"revoked_at": string | null,
+"token_hash": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "kiosk_devices"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "create_member":
 { Args: { "p_data": Json,"p_member_id": string,"p_membership"?: Json,"p_org": string }; Returns: string
                            },
@@ -878,7 +950,6 @@ isOneToOne: false
 "gstin": string | null,
 "id": string,
 "invoice_prefix": string,
-"kiosk_pin_hash": string | null,
 "logo_url": string | null,
 "name": string,
 "phone": string | null,
@@ -962,6 +1033,15 @@ isOneToOne: false
 "ist_today":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"kiosk_check_in":
+{ Args: { "p_device_id": string,"p_member_id": string,"p_method"?: Database["public"]['Enums']["check_in_method"],"p_pin"?: string }; Returns: Json
+                           },
+"kiosk_exit":
+{ Args: { "p_device_id": string,"p_pin": string }; Returns: string
+                           },
+"kiosk_pin_status":
+{ Args: { "p_org": string }; Returns: Json
+                           },
 "list_dues":
 { Args: { "p_filter"?: string,"p_org": string,"p_page"?: number,"p_page_size"?: number,"p_search"?: string }; Returns: Json
                            },
@@ -989,6 +1069,7 @@ isOneToOne: false
 "org_id": string,
 "phone": string,
 "photo_url": string | null,
+"qr_version": number,
 "referred_by_member_id": string | null,
 "source": Database["public"]['Enums']["member_source"],
 "status": string,
@@ -1103,6 +1184,9 @@ isOneToOne: false
 "remove_cashfree_credentials":
 { Args: { "p_org": string }; Returns: undefined
                            },
+"reset_member_qr":
+{ Args: { "p_member_id": string }; Returns: number
+                           },
 "restore_member":
 { Args: { "p_member_id": string }; Returns: {
               "address": string | null,
@@ -1124,6 +1208,7 @@ isOneToOne: false
 "org_id": string,
 "phone": string,
 "photo_url": string | null,
+"qr_version": number,
 "referred_by_member_id": string | null,
 "source": Database["public"]['Enums']["member_source"],
 "status": string,
@@ -1163,8 +1248,14 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"revoke_kiosk_device":
+{ Args: { "p_device_id": string }; Returns: undefined
+                           },
 "safe_uuid":
 { Args: { "p": string }; Returns: string
+                           },
+"save_attendance_settings":
+{ Args: { "p_block_expired": boolean,"p_org": string }; Returns: undefined
                            },
 "save_cashfree_credentials":
 { Args: { "p_app_id": string,"p_environment": string,"p_org": string,"p_secret_enc": string }; Returns: undefined
@@ -1213,7 +1304,6 @@ isOneToOne: false
 "gstin": string | null,
 "id": string,
 "invoice_prefix": string,
-"kiosk_pin_hash": string | null,
 "logo_url": string | null,
 "name": string,
 "phone": string | null,
@@ -1232,6 +1322,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"set_kiosk_pin":
+{ Args: { "p_org": string,"p_pin": string }; Returns: undefined
+                           },
 "set_team_member_active":
 { Args: { "p_active": boolean,"p_team_member_id": string }; Returns: {
               "created_at": string,
@@ -1272,6 +1365,7 @@ isOneToOne: false
 "org_id": string,
 "phone": string,
 "photo_url": string | null,
+"qr_version": number,
 "referred_by_member_id": string | null,
 "source": Database["public"]['Enums']["member_source"],
 "status": string,
@@ -1374,7 +1468,6 @@ isOneToOne: false
 "gstin": string | null,
 "id": string,
 "invoice_prefix": string,
-"kiosk_pin_hash": string | null,
 "logo_url": string | null,
 "name": string,
 "phone": string | null,
@@ -1393,6 +1486,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"verify_kiosk_pin":
+{ Args: { "p_org": string,"p_pin": string }; Returns: string
+                           },
 "void_invoice":
 { Args: { "p_invoice_id": string,"p_reason": string }; Returns: {
               "amount_paid": number,

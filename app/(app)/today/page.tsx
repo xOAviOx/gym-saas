@@ -27,6 +27,7 @@ export default async function TodayPage() {
           label={copy.today.tiles.collectedToday}
           value={<Money paise={stats.collectedToday} />}
           tone="success"
+          className="animate-enter [--index:1]"
         />
         <StatTile
           label={copy.today.tiles.pendingDues}
@@ -36,13 +37,19 @@ export default async function TodayPage() {
             stats.pendingDuesCount > 0 ? copy.today.invoices(stats.pendingDuesCount) : undefined
           }
           href="/dues"
+          className="animate-enter [--index:2]"
         />
         <StatTile
           label={copy.today.tiles.expiringSoon}
           value={stats.expiringIn7Days}
           tone={stats.expiringIn7Days > 0 ? 'warning' : 'default'}
+          className="animate-enter [--index:3]"
         />
-        <StatTile label={copy.today.tiles.checkInsToday} value={stats.checkInsToday} />
+        <StatTile
+          label={copy.today.tiles.checkInsToday}
+          value={stats.checkInsToday}
+          className="animate-enter [--index:4]"
+        />
       </section>
     </>
   );

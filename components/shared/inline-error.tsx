@@ -1,6 +1,6 @@
-import { AlertCircleIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { AlertCircleIcon } from '@/components/icons';
 import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type InlineErrorProps = {

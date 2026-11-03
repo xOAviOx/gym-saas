@@ -17,7 +17,10 @@ export default async function PlansPage() {
   const plans = await getPlans(await createClient(), ctx.org.id);
   return (
     <>
-      <Link href="/more" className="text-primary mb-4 inline-flex min-h-11 items-center text-sm">
+      <Link
+        href="/more"
+        className="text-muted-foreground hover:text-foreground mb-4 inline-flex min-h-11 items-center text-sm transition-colors"
+      >
         {copy.nav.more}
       </Link>
       <PageHeader
@@ -26,16 +29,16 @@ export default async function PlansPage() {
         action={<PlanEditor />}
       />
       {plans.length ? (
-        <ul className="grid gap-3">
+        <ul className="animate-enter grid gap-3 [--index:1]">
           {plans.map((plan) => (
             <li
               key={plan.id}
-              className="bg-card flex items-center justify-between gap-4 rounded-xl border p-5"
+              className="bg-card flex items-center justify-between gap-4 rounded-xl border p-5 md:p-6"
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="truncate text-base font-semibold">{plan.name}</h2>
-                  <span className="text-muted-foreground bg-muted rounded-full px-2 py-1 text-xs">
+                  <span className="text-muted-foreground bg-muted rounded-full px-2.5 py-1 text-[11px] leading-4 font-medium tracking-[0.05em] uppercase">
                     {plan.isActive ? copy.plans.available : copy.plans.archived}
                   </span>
                 </div>
@@ -43,7 +46,9 @@ export default async function PlansPage() {
                   {copy.plans.validity(plan.durationDays)}
                   {plan.sessionCount ? ` · ${copy.plans.sessions(plan.sessionCount)}` : ''}
                 </p>
-                <p className="tabular mt-3 text-xl font-semibold">{formatMoney(plan.price)}</p>
+                <p className="tabular mt-3 text-xl font-semibold tracking-tight">
+                  {formatMoney(plan.price)}
+                </p>
                 {plan.description ? (
                   <p className="text-muted-foreground mt-2 text-sm">{plan.description}</p>
                 ) : null}

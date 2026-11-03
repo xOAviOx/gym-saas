@@ -28,8 +28,12 @@ export default async function OnboardingPage({ searchParams }: { searchParams: S
     return (
       <>
         <Steps current={1} labels={copy.onboarding.steps} />
-        <h1 className="text-2xl">{copy.onboarding.gym.title}</h1>
-        <p className="text-muted-foreground mt-1 mb-6 text-sm">{copy.onboarding.gym.subtitle}</p>
+        <h1 className="font-serif text-3xl leading-[1.1] font-normal tracking-[-0.02em] sm:text-4xl">
+          {copy.onboarding.gym.title}
+        </h1>
+        <p className="text-muted-foreground leading-prose mt-2 mb-8 text-sm">
+          {copy.onboarding.gym.subtitle}
+        </p>
         <CreateGymForm />
       </>
     );
@@ -42,8 +46,12 @@ export default async function OnboardingPage({ searchParams }: { searchParams: S
     return (
       <>
         <Steps current={2} labels={copy.onboarding.steps} />
-        <h1 className="text-2xl">{copy.onboarding.plans.title}</h1>
-        <p className="text-muted-foreground mt-1 mb-6 text-sm">{copy.onboarding.plans.subtitle}</p>
+        <h1 className="font-serif text-3xl leading-[1.1] font-normal tracking-[-0.02em] sm:text-4xl">
+          {copy.onboarding.plans.title}
+        </h1>
+        <p className="text-muted-foreground leading-prose mt-2 mb-8 text-sm">
+          {copy.onboarding.plans.subtitle}
+        </p>
         <PlansForm />
       </>
     );
@@ -57,8 +65,10 @@ export default async function OnboardingPage({ searchParams }: { searchParams: S
   return (
     <>
       <Steps current={3} labels={copy.onboarding.steps} />
-      <h1 className="text-2xl">{copy.onboarding.firstMember.title}</h1>
-      <p className="text-muted-foreground mt-1 mb-6 text-sm">
+      <h1 className="font-serif text-3xl leading-[1.1] font-normal tracking-[-0.02em] sm:text-4xl">
+        {copy.onboarding.firstMember.title}
+      </h1>
+      <p className="text-muted-foreground leading-prose mt-2 mb-8 text-sm">
         {copy.onboarding.firstMember.subtitle}
       </p>
       <FirstMemberStep />

@@ -131,7 +131,7 @@ export function ClaimReview({ invoiceId, claim }: { invoiceId: string; claim: In
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="tabular text-lg font-semibold">{amount}</p>
-          <p className="tabular mt-1 text-sm break-all">{copy.claims.utr(claim.utr)}</p>
+          <p className="mt-1 font-mono text-sm break-all">{copy.claims.utr(claim.utr)}</p>
           <p className="text-muted-foreground mt-1 text-xs">
             {copy.claims.claimedAt(formatDateTime(claim.claimedAt))}
           </p>

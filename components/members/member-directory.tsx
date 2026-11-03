@@ -1,10 +1,10 @@
 'use client';
 
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
-import { SearchIcon, UsersIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 
+import { SearchIcon, UsersIcon } from '@/components/icons';
 import { EmptyState } from '@/components/shared/empty-state';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,8 @@ function directoryColumns(today: string): ColumnDef<DirectoryMember>[] {
         >
           <span className="font-medium">{row.original.fullName}</span>
           <span className="text-muted-foreground mt-1 block text-xs">
-            {row.original.memberCode} · {formatPhoneNational(row.original.phone)}
+            <span className="font-mono">{row.original.memberCode}</span> ·{' '}
+            {formatPhoneNational(row.original.phone)}
           </span>
         </Link>
       ),
@@ -145,7 +146,10 @@ export function MemberDirectory({
   return (
     <div className="grid gap-4">
       {filter !== 'deleted' ? (
-        <section aria-label={copy.members.overviewTitle} className="grid gap-3">
+        <section
+          aria-label={copy.members.overviewTitle}
+          className="animate-enter grid gap-3 [--index:1]"
+        >
           <div>
             <h2 className="text-sm font-semibold">{copy.members.overviewTitle}</h2>
             <p className="text-muted-foreground mt-1 text-xs">{copy.members.overviewHelp}</p>
@@ -157,11 +161,11 @@ export function MemberDirectory({
                 href={directoryUrl(q, card.filter)}
                 aria-current={filter === card.filter ? 'page' : undefined}
                 className={cn(
-                  'bg-card hover:border-primary/50 focus-visible:ring-ring/40 grid min-w-0 content-start gap-2 rounded-xl border p-3 transition-colors outline-none focus-visible:ring-3 sm:p-4',
-                  filter === card.filter && 'border-primary bg-success-soft',
+                  'bg-card border-border hover:shadow-lift focus-visible:ring-ring/20 grid min-w-0 content-start gap-2 rounded-xl border p-3 transition-shadow duration-200 outline-none focus-visible:ring-3 sm:p-5',
+                  filter === card.filter && 'border-foreground',
                 )}
               >
-                <span className="text-muted-foreground min-h-8 min-w-0 text-xs break-words">
+                <span className="text-muted-foreground min-h-8 min-w-0 text-[11px] leading-4 font-medium tracking-[0.05em] break-words uppercase">
                   {card.title}
                 </span>
                 <span className="tabular min-w-0 text-xl font-semibold break-all sm:text-2xl">
@@ -215,8 +219,8 @@ export function MemberDirectory({
             className={cn(
               'inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-sm transition-colors duration-150',
               filter === value
-                ? 'bg-success-soft border-primary text-primary font-medium'
-                : 'bg-card text-muted-foreground hover:border-zinc-400',
+                ? 'bg-card border-foreground text-foreground font-medium'
+                : 'bg-card text-muted-foreground hover:border-input hover:text-foreground',
             )}
           >
             {label}
@@ -262,8 +266,8 @@ export function MemberDirectory({
           }
         />
       ) : (
-        <div className="bg-card overflow-hidden rounded-xl border">
-          <ul className="divide-y xl:hidden">
+        <div className="bg-card border-border animate-enter overflow-hidden rounded-xl border [--index:2]">
+          <ul className="divide-border divide-y xl:hidden">
             {rows.map(({ original: m }) => (
               <li key={m.id} className="p-4">
                 <Link
@@ -275,7 +279,8 @@ export function MemberDirectory({
                     <StatusBadge status={m.status} />
                   </div>
                   <p className="text-muted-foreground mt-1 text-xs">
-                    {m.memberCode} · {formatPhoneNational(m.phone)}
+                    <span className="font-mono">{m.memberCode}</span> ·{' '}
+                    {formatPhoneNational(m.phone)}
                   </p>
                   <div className="mt-3 flex justify-between gap-3 text-sm">
                     <span className="text-muted-foreground min-w-0 truncate">
@@ -301,7 +306,7 @@ export function MemberDirectory({
             ))}
           </ul>
           <table className="hidden w-full text-left xl:table">
-            <thead className="text-muted-foreground bg-muted/30 border-b text-xs">
+            <thead className="text-muted-foreground border-border border-b text-[11px] tracking-[0.05em] uppercase">
               {table.getHeaderGroups().map((group) => (
                 <tr key={group.id}>
                   {group.headers.map((header) => (
@@ -312,7 +317,7 @@ export function MemberDirectory({
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-border divide-y">
               {rows.map((row) => (
                 <tr key={row.id} className="hover:bg-muted/30">
                   {row.getVisibleCells().map((cell) => (

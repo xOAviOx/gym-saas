@@ -1,5 +1,4 @@
-import { LogOutIcon } from 'lucide-react';
-
+import { LogOutIcon } from '@/components/icons';
 import { BrandMark } from '@/components/shared/brand-mark';
 import { RolePill } from '@/components/shared/role-pill';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ export function Sidebar({ ctx }: { ctx: OrgContext }) {
   const displayName = ctx.profile?.full_name?.trim() || ctx.user.email || '';
 
   return (
-    <aside className="bg-card sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r md:flex">
+    <aside className="bg-background border-border sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r md:flex">
       <div className="flex items-center gap-2.5 px-5 py-5">
         <BrandMark />
         <div className="min-w-0">
@@ -24,7 +23,7 @@ export function Sidebar({ ctx }: { ctx: OrgContext }) {
 
       <SidebarNav />
 
-      <div className="border-t p-4">
+      <div className="border-border border-t p-4">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{displayName}</p>

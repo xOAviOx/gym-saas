@@ -1,11 +1,11 @@
 'use client';
 
-import { ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { ExternalLinkIcon } from '@/components/icons';
 import { applyActionResult } from '@/components/shared/apply-action-result';
 import { ConfirmAction } from '@/components/shared/confirm-action';
 import { CopyButton } from '@/components/shared/copy-button';
@@ -35,7 +35,7 @@ function LinkStatus({ link }: { link: GatewayLink }) {
   return (
     <span
       className={cn(
-        'inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-xs font-medium',
+        'inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-[11px] leading-4 font-medium tracking-[0.05em] uppercase',
         statusTone[status],
       )}
     >
@@ -96,7 +96,10 @@ export function GatewayPanel({
   }
 
   return (
-    <section className="bg-card grid gap-4 rounded-xl border p-5" aria-labelledby="gateway-title">
+    <section
+      className="bg-card grid gap-4 rounded-xl border p-5 md:p-6"
+      aria-labelledby="gateway-title"
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 id="gateway-title" className="text-base font-semibold">
@@ -105,7 +108,7 @@ export function GatewayPanel({
           <p className="text-muted-foreground mt-1 text-sm">{copy.gateway.body}</p>
         </div>
         {configured && sandbox ? (
-          <span className="bg-warning-soft text-warning inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-xs font-medium">
+          <span className="bg-warning-soft text-warning inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-[11px] leading-4 font-medium tracking-[0.05em] uppercase">
             {copy.gateway.sandbox}
           </span>
         ) : null}
@@ -140,7 +143,7 @@ export function GatewayPanel({
                 value={active.url}
                 aria-label={copy.gateway.title}
                 onFocus={(event) => event.currentTarget.select()}
-                className="text-muted-foreground"
+                className="text-muted-foreground font-mono text-sm md:text-xs"
               />
               <div className="grid gap-3 sm:flex sm:flex-wrap">
                 <CopyButton

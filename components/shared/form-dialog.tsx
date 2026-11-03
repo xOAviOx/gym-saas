@@ -1,8 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { XIcon } from 'lucide-react';
 
+import { XIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -36,7 +36,7 @@ export function FormDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
         showCloseButton={false}
-        className="pb-safe top-auto right-0 bottom-0 left-0 max-h-[90dvh] w-full max-w-none translate-x-0 translate-y-0 gap-5 overflow-y-auto rounded-t-2xl rounded-b-none p-5 sm:top-1/2 sm:right-auto sm:bottom-auto sm:left-1/2 sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:p-6"
+        className="pb-safe top-auto right-0 bottom-0 left-0 max-h-[90dvh] w-full max-w-none translate-x-0 translate-y-0 gap-5 overflow-y-auto rounded-t-xl rounded-b-none p-5 sm:top-1/2 sm:right-auto sm:bottom-auto sm:left-1/2 sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:p-6"
       >
         <DialogHeader className="pr-10">
           <DialogTitle>{title}</DialogTitle>

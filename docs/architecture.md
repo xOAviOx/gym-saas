@@ -11,7 +11,7 @@
 
 ## Database
 
-- Postgres with row-level security on every table. The base policy is `org_id in (select my_org_ids())`; privileged tables (expenses, organization settings) further require owner or manager. Invoices, invoice_items, payments, payment_claims, collection_requests, organization_secrets, team_members and audit_logs have no direct write policies and change only through SQL functions. Payments are never updated or deleted; a trigger allows only clearing `collected_by` when a team member is removed. Organization secrets are readable by owners and managers only.
+- Postgres with row-level security on every table. The base policy is `org_id in (select my_org_ids())`; privileged tables (expenses, organization settings) further require owner or manager. Invoices, invoice_items, payments, payment_claims, collection_requests, organization_secrets, check_ins, kiosk_devices, team_members and audit_logs have no direct write policies and change only through SQL functions. Payments are never updated or deleted; a trigger allows only clearing `collected_by` when a team member is removed. Organization secrets are readable by owners and managers only.
 - Multi-step writes (create gym, create membership, record payment, confirm claim, check-in, …) are `security definer` functions. Each checks the caller's role with `assert_org_role`, performs the whole change in one transaction and writes its own audit row.
 - Member, plan and membership writes have no direct authenticated insert/update policies. `create_member`, `update_member`, `save_plan`, `enroll_member` and the lifecycle/import RPCs are the audited write paths. `create_member` and enrollment use request UUIDs for safe retries; member creation, its optional membership, its invoice and its audit rows commit or roll back together.
 - The `member_directory` view is `security_invoker`, so RLS applies to its members, memberships, plans and invoices. `list_members` scopes the gym, validates filters and paging, searches literal substrings, and orders dues/expiry first. Its overview counts and balance are computed over the same search matches before the selected status filter and pagination. Live totals exclude deleted records; deleted counts, browsing and restore require owner or manager.
@@ -21,12 +21,12 @@
 
 ## Supabase clients
 
-| Client                   | Where                                                                                                                                 | Key                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `lib/supabase/server.ts` | Server Components and Server Actions                                                                                                  | anon + cookie session (RLS applies) |
-| `lib/supabase/client.ts` | Client Components (auth UI only)                                                                                                      | anon                                |
-| `lib/supabase/proxy.ts`  | `proxy.ts`                                                                                                                            | anon                                |
-| `lib/supabase/admin.ts`  | webhooks, cron, portal and pay-link routes after token validation, Cashfree credential decryption, invite acceptance, kiosk PIN check | service role                        |
+| Client                   | Where                                                                                                                                  | Key                                 |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `lib/supabase/server.ts` | Server Components and Server Actions                                                                                                   | anon + cookie session (RLS applies) |
+| `lib/supabase/client.ts` | Client Components (auth UI only)                                                                                                       | anon                                |
+| `lib/supabase/proxy.ts`  | `proxy.ts`                                                                                                                             | anon                                |
+| `lib/supabase/admin.ts`  | webhooks, cron, portal, pay-link and card routes after token validation, Cashfree credential decryption, invite acceptance, kiosk mode | service role                        |
 
 The service role key never reaches a page or a client bundle.
 
@@ -49,6 +49,16 @@ Recent activity combines recorded member creation, membership creation, payments
 - Pay links (`/p/pay/<token>`) carry an HMAC-SHA256 token signed with a key derived from `PORTAL_TOKEN_SECRET`, bound to one invoice and valid for 30 days. After verifying the token, the page and its PDF route read only that invoice through the service role. Claim, checkout and status requests are rate-limited per client. Members submit UPI claims through `submit_payment_claim`, which only the service role can call, at most three per invoice per IST day. Staff confirm a claim (which records a UPI payment) or reject it with a reason.
 - Cashfree keys are checked with Cashfree before `save_cashfree_credentials` stores them. The secret key is encrypted with AES-256-GCM using `SECRETS_ENCRYPTION_KEY` and never appears in audit rows. An invoice has at most one live Cashfree link. Webhooks at `/api/webhooks/cashfree` are verified with the gym's secret (base64 HMAC-SHA256 of timestamp + raw body) and logged in `gateway_events`. The payment itself is always re-read from the Cashfree API before `record_gateway_payment` (service role only, idempotent per Cashfree payment id) records it. **Check payment status** on an invoice runs the same reconciliation.
 - PDFs are generated on the server with `pdf-lib` (`lib/pdf/invoice-pdf.ts`): a one-page tax invoice when GST is enabled, otherwise a receipt, and a void document for voided invoices.
+
+## Attendance and kiosk
+
+- `check_in_member` is the only way a signed-in team member creates a check-in. It looks the member up inside the caller's gyms only, so another gym's member looks the same as a missing one. The shared `apply_check_in` core sets the flag (expired > expiring > dues pending), returns the earlier check-in as `duplicate` for a second scan within five minutes (no extra session is used), and consumes a session on session-based plans.
+- When **Block expired members** is on (`organizations.settings.block_expired_checkin`), an expired member gets `blocked`. Owners and managers can let them in directly. Staff and the kiosk need the kiosk PIN, which SQL verifies. Every override writes a `check_in.override` audit row.
+- The kiosk PIN hash lives in `organization_kiosk`, which has no policies, because every team member can read `organizations` and a 4-6 digit bcrypt hash is easy to brute-force offline. `verify_kiosk_pin` never raises on a wrong PIN, so the failure counter commits; five wrong tries lock the PIN for five minutes. Saving the PIN again clears a lockout. Removing it turns off every kiosk, because none could be exited.
+- Member QR codes are `GDM1.<payload>.<signature>` (`lib/attendance/qr-token.ts`): the member id and a QR version, signed with HMAC-SHA256 under a purpose-specific key derived from `PORTAL_TOKEN_SECRET`. They do not expire. `reset_member_qr` bumps `members.qr_version`, which stops the old code and its card link. The scanner also accepts a scanned `/p/card/<token>` URL. The public card page shows the code after verifying the token and version through the service role.
+- The scanner uses the browser `BarcodeDetector` where available and falls back to `jsQR` on canvas frames.
+- Kiosk pairing: an owner or manager on the front-desk device calls `create_kiosk_device` (needs a PIN, at most 10 live devices). The device gets a random 32-byte token in an httpOnly `gd_kiosk` cookie; only its SHA-256 is stored. The user session is then signed out, so the tablet never holds staff credentials. `/kiosk` is public in the proxy; kiosk actions resolve the device from the cookie and call `kiosk_check_in` / `kiosk_exit`, which only the service role can execute. Kiosk check-ins are rate-limited per device (60 a minute, 10 PIN attempts per 5 minutes), and the kiosk shows only the member's first name and photo.
+- Exiting kiosk mode needs the PIN and revokes the device. Owners and managers can also turn a device off from attendance settings; its next request shows the unpaired screen.
 
 ## Text and formatting
 

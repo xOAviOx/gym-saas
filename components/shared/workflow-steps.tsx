@@ -1,5 +1,4 @@
-import { CheckIcon } from 'lucide-react';
-
+import { CheckIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 export function WorkflowSteps({
@@ -25,7 +24,7 @@ export function WorkflowSteps({
           aria-current={!complete && index === current ? 'step' : undefined}
           className={cn(
             'flex min-w-0 items-start gap-2 border-t-2 pt-3 text-xs sm:text-sm',
-            complete || index <= current ? 'border-primary' : 'border-border',
+            complete || index <= current ? 'border-foreground' : 'border-border',
             !complete && index > current ? 'text-muted-foreground' : 'text-foreground',
           )}
         >
@@ -36,7 +35,7 @@ export function WorkflowSteps({
               complete || index < current
                 ? 'bg-primary text-primary-foreground'
                 : index === current
-                  ? 'bg-success-soft text-primary'
+                  ? 'border-foreground text-foreground border'
                   : 'bg-muted text-muted-foreground',
             )}
           >

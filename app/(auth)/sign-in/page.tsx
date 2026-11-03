@@ -26,7 +26,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Searc
           {copy.auth.noAccount}{' '}
           <Link
             href="/sign-up"
-            className="text-primary font-medium underline-offset-4 hover:underline"
+            className="text-foreground decoration-input font-medium underline underline-offset-4 hover:decoration-current"
           >
             {copy.auth.createOne}
           </Link>

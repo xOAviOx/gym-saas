@@ -1,7 +1,7 @@
-import { LogOutIcon } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { LogOutIcon } from '@/components/icons';
 import { PageHeader } from '@/components/shared/page-header';
 import { RolePill } from '@/components/shared/role-pill';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ export default async function MorePage() {
         {can.managePlans(ctx.role) ? (
           <Link
             href="/settings/plans"
-            className="bg-card flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium"
+            className="bg-card hover:shadow-lift focus-visible:ring-ring/20 animate-enter flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium transition-shadow duration-200 outline-none focus-visible:ring-3"
           >
             {copy.plans.manage}
             <span aria-hidden="true">→</span>
@@ -34,13 +34,22 @@ export default async function MorePage() {
         {can.manageSettings(ctx.role) ? (
           <Link
             href="/settings/payments"
-            className="bg-card flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium"
+            className="bg-card hover:shadow-lift focus-visible:ring-ring/20 animate-enter flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium transition-shadow duration-200 outline-none [--index:1] focus-visible:ring-3"
           >
             {copy.paymentSettings.manage}
             <span aria-hidden="true">→</span>
           </Link>
         ) : null}
-        <Card>
+        {can.manageSettings(ctx.role) ? (
+          <Link
+            href="/settings/attendance"
+            className="bg-card hover:shadow-lift focus-visible:ring-ring/20 animate-enter flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium transition-shadow duration-200 outline-none [--index:2] focus-visible:ring-3"
+          >
+            {copy.attendanceSettings.title}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
+        <Card className="animate-enter [--index:3]">
           <CardHeader>
             <CardTitle>{copy.more.gym}</CardTitle>
           </CardHeader>
@@ -76,13 +85,13 @@ export default async function MorePage() {
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">{copy.onboarding.gym.invoicePrefix}</dt>
-                <dd className="text-right">{ctx.org.invoice_prefix}</dd>
+                <dd className="text-right font-mono">{ctx.org.invoice_prefix}</dd>
               </div>
             </dl>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-enter [--index:4]">
           <CardHeader>
             <CardTitle>{copy.more.account}</CardTitle>
           </CardHeader>

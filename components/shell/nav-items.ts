@@ -4,15 +4,14 @@ import {
   IndianRupeeIcon,
   ScanLineIcon,
   UsersIcon,
-  type LucideIcon,
-} from 'lucide-react';
-
+  type AppIcon,
+} from '@/components/icons';
 import { copy } from '@/lib/copy';
 
 export type NavItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: AppIcon;
 };
 
 /** The five primary destinations, shared by the mobile bottom nav and the desktop sidebar. */

@@ -6,7 +6,7 @@ export async function qrDataUrl(text: string): Promise<string> {
     type: 'svg',
     errorCorrectionLevel: 'M',
     margin: 1,
-    color: { dark: '#18181bff', light: '#ffffffff' },
+    color: { dark: '#111111ff', light: '#ffffffff' },
   });
   return `data:image/svg+xml;base64,${Buffer.from(svg, 'utf8').toString('base64')}`;
 }

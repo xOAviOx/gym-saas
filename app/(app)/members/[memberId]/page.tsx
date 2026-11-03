@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
 
+import { MemberCheckInButton } from '@/components/attendance/member-check-in-button';
+import { MemberQrDialog } from '@/components/attendance/member-qr-dialog';
 import { AttendanceHeatmap } from '@/components/members/attendance-heatmap';
 import { EditMember } from '@/components/members/edit-member';
 import { MemberActivity } from '@/components/members/member-activity';
@@ -15,6 +17,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { memberQrFor } from '@/features/attendance/member-qr';
 import { deleteMember, restoreMember } from '@/features/members/actions';
 import { buildMemberActivity } from '@/features/members/activity';
 import { membershipHint } from '@/features/members/presentation';
@@ -26,7 +29,7 @@ import {
 } from '@/features/members/queries';
 import type { MemberDetailsInput } from '@/features/members/schema';
 import { getPlans } from '@/features/plans/queries';
-import { can } from '@/lib/auth/roles';
+import { can, isPrivileged } from '@/lib/auth/roles';
 import { requireOrg } from '@/lib/auth/session';
 import { copy } from '@/lib/copy';
 import {
@@ -45,6 +48,7 @@ import {
 } from '@/lib/membership';
 import { formatMoney, sumPaise } from '@/lib/money';
 import { formatPhone, telUrl, waMeUrl } from '@/lib/phone';
+import { qrDataUrl } from '@/lib/qr';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = { title: copy.members.details };
@@ -95,16 +99,23 @@ export default async function MemberPage({
     consentMessaging: member.consent_messaging,
   };
   const readOnly = !!member.deleted_at;
+  const qr = readOnly ? null : memberQrFor(member.id, member.qr_version);
+  const qrSrc = qr ? await qrDataUrl(qr.token) : null;
   return (
     <>
-      <Link href="/members" className="text-primary mb-4 inline-flex min-h-11 items-center text-sm">
+      <Link
+        href="/members"
+        className="text-muted-foreground hover:text-foreground mb-4 inline-flex min-h-11 items-center text-sm transition-colors"
+      >
         {copy.members.back}
       </Link>
-      <header className="mb-5 flex items-start justify-between gap-3">
+      <header className="animate-enter mb-6 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl break-words md:text-3xl">{member.full_name}</h1>
+          <h1 className="font-serif text-3xl leading-[1.1] font-normal tracking-[-0.02em] break-words sm:text-4xl">
+            {member.full_name}
+          </h1>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <span className="text-muted-foreground text-sm">{member.member_code}</span>
+            <span className="text-muted-foreground font-mono text-sm">{member.member_code}</span>
             <StatusBadge status={state} />
           </div>
         </div>
@@ -128,7 +139,26 @@ export default async function MemberPage({
           </div>
         </section>
       ) : null}
-      <div className="mb-6 flex gap-3">
+      <div className="mb-6 flex flex-wrap gap-3">
+        {!readOnly ? (
+          <MemberCheckInButton
+            memberId={member.id}
+            name={member.full_name}
+            canOverride={isPrivileged(ctx.role)}
+          />
+        ) : null}
+        {qr && qrSrc ? (
+          <MemberQrDialog
+            memberId={member.id}
+            name={member.full_name}
+            code={member.member_code}
+            gym={ctx.org.name}
+            phone={member.phone}
+            consentMessaging={member.consent_messaging}
+            qrSrc={qrSrc}
+            cardUrl={qr.cardUrl}
+          />
+        ) : null}
         <Button asChild variant="outline" className="flex-1 sm:flex-none">
           <a href={telUrl(member.phone)}>{copy.members.call}</a>
         </Button>
@@ -149,9 +179,11 @@ export default async function MemberPage({
           </Button>
         )}
       </div>
-      <div className="mb-6 grid gap-4 lg:grid-cols-2">
-        <section className="bg-card grid content-start gap-4 rounded-xl border p-5">
-          <p className="text-muted-foreground text-xs font-medium">{copy.members.membership}</p>
+      <div className="animate-enter mb-6 grid gap-4 [--index:1] lg:grid-cols-2">
+        <section className="bg-card grid content-start gap-4 rounded-xl border p-5 md:p-6">
+          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.05em] uppercase">
+            {copy.members.membership}
+          </p>
           {current ? (
             <>
               <h2 className="text-xl">{current.planName}</h2>
@@ -221,10 +253,12 @@ export default async function MemberPage({
         </section>
         <section
           id="member-dues"
-          className="bg-card grid scroll-mt-6 content-start gap-4 rounded-xl border p-5"
+          className="bg-card grid scroll-mt-6 content-start gap-4 rounded-xl border p-5 md:p-6"
         >
-          <p className="text-muted-foreground text-xs font-medium">{copy.members.pendingDues}</p>
-          <h2 className={`tabular text-3xl ${balance > 0 ? 'text-danger' : ''}`}>
+          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.05em] uppercase">
+            {copy.members.pendingDues}
+          </p>
+          <h2 className={`tabular text-3xl leading-none ${balance > 0 ? 'text-danger' : ''}`}>
             {formatMoney(balance)}
           </h2>
           {balance === 0 ? (
@@ -236,10 +270,10 @@ export default async function MemberPage({
                   <Link
                     href={`/invoices/${invoice.id}`}
                     aria-label={copy.dues.openFor(invoice.number, member.full_name)}
-                    className="hover:bg-muted/40 focus-visible:ring-ring/40 -mx-2 flex min-h-11 items-center justify-between gap-3 rounded-lg px-2 py-2 text-sm outline-none focus-visible:ring-3"
+                    className="hover:bg-muted/60 focus-visible:ring-ring/20 -mx-2 flex min-h-11 items-center justify-between gap-3 rounded-md px-2 py-2 text-sm outline-none focus-visible:ring-3"
                   >
                     <div>
-                      <p className="font-medium">{invoice.number}</p>
+                      <p className="font-mono font-medium">{invoice.number}</p>
                       <p className="text-muted-foreground mt-1 text-xs">
                         {relativeDueDate(invoice.dueDate, today).label}
                       </p>
@@ -257,7 +291,7 @@ export default async function MemberPage({
           )}
         </section>
       </div>
-      <Tabs defaultValue="memberships">
+      <Tabs defaultValue="memberships" className="animate-enter [--index:2]">
         <TabsList className="mb-4 flex h-auto min-h-11 w-full overflow-x-auto">
           <TabsTrigger value="memberships" className="min-h-11 flex-1">
             {copy.members.membership}
@@ -297,7 +331,7 @@ export default async function MemberPage({
         </TabsContent>
         <TabsContent value="payments">
           {activity.payments.length ? (
-            <ul className="bg-card divide-y rounded-xl border">
+            <ul className="bg-card divide-border divide-y rounded-xl border">
               {activity.payments.map((p) => (
                 <li key={p.id} className="flex items-start justify-between gap-3 p-4">
                   <div>
@@ -308,7 +342,7 @@ export default async function MemberPage({
                     <p className="text-muted-foreground mt-1 text-xs">
                       <Link
                         href={`/invoices/${p.invoiceId}`}
-                        className="text-primary underline-offset-4 hover:underline"
+                        className="text-foreground decoration-input font-mono underline underline-offset-4 hover:decoration-current"
                       >
                         {p.invoiceNumber}
                       </Link>
@@ -402,7 +436,10 @@ export default async function MemberPage({
           {member.tags.length ? (
             <div className="flex flex-wrap gap-2">
               {member.tags.map((tag) => (
-                <span key={tag} className="bg-muted rounded-full px-3 py-1 text-xs">
+                <span
+                  key={tag}
+                  className="bg-muted rounded-full px-2.5 py-1 text-[11px] font-medium tracking-[0.05em] uppercase"
+                >
                   {tag}
                 </span>
               ))}

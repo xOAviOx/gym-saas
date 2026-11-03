@@ -62,9 +62,9 @@ export function MemberPhoto({
   }
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <Avatar className="size-16 rounded-2xl">
+      <Avatar className="size-16 rounded-xl">
         <AvatarImage src={url ?? undefined} alt={fullName} />
-        <AvatarFallback className="rounded-2xl text-xl">{initials}</AvatarFallback>
+        <AvatarFallback className="rounded-xl text-xl">{initials}</AvatarFallback>
       </Avatar>
       {!readOnly ? (
         <div className="grid gap-2">

@@ -14,7 +14,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label={copy.nav.mainNavigation}
-      className="bg-card/95 pb-safe fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur md:hidden"
+      className="bg-background/85 border-border pb-safe fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-md md:hidden"
     >
       <ul className="grid grid-cols-5">
         {PRIMARY_NAV.map((item) => {
@@ -27,10 +27,10 @@ export function BottomNav() {
                 aria-current={active ? 'page' : undefined}
                 className={cn(
                   'focus-visible:bg-muted flex h-14 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors duration-150 outline-none',
-                  active ? 'text-primary' : 'text-muted-foreground',
+                  active ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
-                <Icon className="size-5" aria-hidden="true" strokeWidth={active ? 2.25 : 2} />
+                <Icon className="size-5" weight={active ? 'fill' : 'bold'} />
                 {item.label}
               </Link>
             </li>

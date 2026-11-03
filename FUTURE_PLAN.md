@@ -2,21 +2,16 @@
 
 What to build next in GymDesk, in order. Read `ABOUT_PROJECT.md` first for invariants and conventions — they apply to every item below. Update this file as work lands, and move completed items into `PROGRESS.md`.
 
-## Immediate next up: M3 — Attendance, QR, kiosk
+## M3 — Attendance, QR, kiosk (committed, validating)
 
-The next milestone. Dependencies are already installed and waiting (uncommitted in `package.json`): `jsqr` for browser QR decoding and `@phosphor-icons/react` for the kiosk UI. `app/(app)/attendance/page.tsx` is a placeholder to replace.
+Done: `check_in_member` RPC (no direct writes), five-minute duplicate window, session consumption, block-expired with owner/manager or PIN override, signed member QR codes with `qr_version` revocation and `/p/card/<token>` page, paired kiosk devices with service-role-only functions, attendance screen and settings. See `docs/m3-testing.md`.
 
-Scope:
+Still open:
 
-1. **Check-in storage and RPC.** A `check_in` write path via a `security definer` RPC (consistent with the audited-write pattern; direct table writes are not allowed for staff either). Decide and enforce: one check-in per member per day vs. per visit; how session-based memberships (multi-visit plans) consume a visit. Check-ins must respect membership status (active/expired/frozen) using the same IST-based status computation as the rest of the app, not a cached status.
-2. **Member QR codes.** Generate a per-member QR (the `qrcode` package is already a dependency). Decide the payload format (signed token vs. member UUID; tokens should be revocable and not leak the org). Rendering on the member detail page for printing/screenshots.
-3. **Kiosk mode.** A public route (likely under a path exempt from the normal session flow, similar to `/p/`) where a tablet at the gym door scans a member QR with the camera (`jsqr`), verifies against the server via the service role after token validation (kiosk PIN check is already an anticipated service-role use), and shows a big success/error screen. Needs: kiosk session activation (PIN or signed link), camera-only CSP permission is already scoped for the QR scanner, rate limiting, and idle-loop back to the scan screen.
-4. **Attendance views.** Staff-facing attendance list for a day/date range in the existing app shell, following the Dues screen patterns (search, filters, IST dates).
-5. **Cron tie-in.** The nightly maintenance job (`/api/cron/daily`) should handle any attendance-derived status refresh consistent with the membership status rules in `docs/architecture.md`.
+- Device testing: camera scanning on a real phone and tablet, kiosk on the front-desk tablet, axe scans.
+- The nightly maintenance job (`/api/cron/daily`) does not exist yet. Attendance does not need it, because status is computed live at check-in; build it with M4 reminders, which also run on Vercel Cron.
 
-Testing expectations: extend `tests/unit` (QR payload signing/verification, visit-consumption rules) and `tests/rls` (kiosk route can only check in, staff scoping, cross-gym isolation). Update `docs/` with an `m3-testing.md` in the existing format.
-
-## M4 — Reminders, WhatsApp providers, templates
+## Immediate next up: M4 — Reminders, WhatsApp providers, templates
 
 - WhatsApp message providers (per-gym credentials encrypted with `SECRETS_ENCRYPTION_KEY`, following the Cashfree credentials pattern: verify before save, never show the secret again, keep ciphertext out of audit rows).
 - Payment-due reminders through the 10:00 IST Vercel Cron job; member consent to messaging (`messaging_consent` already exists on members and defaults to false — respect it everywhere).
@@ -42,13 +37,13 @@ Testing expectations: extend `tests/unit` (QR payload signing/verification, visi
 - **Playwright suite**: the smoke flows promised by `pnpm test:e2e` (currently unimplemented).
 - **Docs**: final pass on README and docs.
 
-## Carried-over validation debt (do these before or during M3)
+## Carried-over validation debt
 
 - [ ] Live Cashfree sandbox payment test with real sandbox keys (procedure in `docs/m2-testing.md`).
 - [ ] Webhook delivery end-to-end against a public HTTPS URL.
 - [ ] axe accessibility scans of the M2 screens.
 - [ ] Resolve or re-check the dev-only `minimatch` moderate advisory (GHSA-g3hv-75wg-m249) — safe to carry while it stays dev-only.
-- [ ] Commit the pending `package.json`/`pnpm-lock.yaml` dependency additions (jsqr, phosphor icons) as part of the first M3 commit.
+- [ ] M3 device checks: camera scanning on a real phone and tablet, kiosk on the front-desk tablet, axe scans (checklist in `docs/m3-testing.md`).
 
 ## Working rules for any agent picking this up
 

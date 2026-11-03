@@ -5,7 +5,7 @@ India-first gym management for owners, managers and staff: members and membershi
 ## Stack
 
 - Next.js 16 (App Router, Server Components, Server Actions), TypeScript strict
-- Tailwind CSS v4, shadcn/ui, lucide-react, Inter with tabular numbers
+- Tailwind CSS v4, shadcn/ui, Phosphor icons (`components/icons.tsx`), Geist with tabular numbers and Instrument Serif headings
 - Supabase (Postgres, Auth, Storage) with row-level security; all multi-step writes are SQL functions called over RPC
 - Vercel (Mumbai) with Vercel Cron for nightly maintenance and 10:00 IST reminders
 - react-hook-form + zod (the same schemas validate on the client and the server)
@@ -36,8 +36,8 @@ Full walkthrough, including how to generate the secrets and what to do after cha
 | `pnpm build`     | Production build                                                    |
 | `pnpm lint`      | ESLint                                                              |
 | `pnpm typecheck` | `tsc --noEmit`                                                      |
-| `pnpm test`      | Unit tests: members, memberships, import, GST, pay links, Cashfree  |
-| `pnpm test:rls`  | Tenant isolation, roles, atomic writes, retries and billing rules   |
+| `pnpm test`      | Unit tests: members, billing, pay links, Cashfree, QR and kiosk     |
+| `pnpm test:rls`  | Tenant isolation, roles, atomic writes, billing and check-in rules  |
 | `pnpm test:e2e`  | Playwright smoke flows (arrives in M6)                              |
 | `pnpm db:start`  | Start or resume the local Supabase stack                            |
 | `pnpm db:reset`  | Drop and recreate the local database from migrations + seed         |
@@ -70,7 +70,7 @@ See `.env.example`. Every variable is validated at boot (`lib/env.ts`); the app 
 | M0        | Scaffold, tooling, CI, design tokens, shell, auth, gym creation, team roles, RLS, env | Done       |
 | M1        | Plans, members CRUD, memberships, member detail, Excel import                         | Done       |
 | M2        | Invoices, GST, numbering, payments, direct UPI, claims, Cashfree, PDF receipts, Dues  | Validating |
-| M3        | Attendance, QR, kiosk                                                                 |            |
+| M3        | Attendance, QR, kiosk                                                                 | Validating |
 | M4        | Reminders, WhatsApp providers, templates                                              |            |
 | M5        | Today dashboard, Reports, Expenses, CSV                                               |            |
 | M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        |            |
@@ -82,3 +82,7 @@ See [docs/m1-testing.md](docs/m1-testing.md) for setup, validation results and t
 M2 adds the Dues screen, invoice detail with the GST breakdown, counter payments with safe retries, reversals and voids, direct UPI QR codes, signed per-invoice pay links where members submit a 12-digit UTR claim, claim review, Cashfree payment links with webhook and manual reconciliation, per-gym payment settings with encrypted Cashfree keys, and one-page PDF tax invoices and receipts.
 
 See [docs/m2-testing.md](docs/m2-testing.md) for setup, validation results, the Cashfree sandbox test and the acceptance checklist.
+
+M3 adds the Attendance screen (desk search, camera QR scanning, hourly and 7-day charts, a day-by-day list), signed member check-in QR codes with a shareable card page, a PIN-protected kiosk mode for a front-desk tablet, and attendance settings (block expired members, kiosk PIN, paired devices). It also moves the whole app to the minimalist design system: warm monochrome palette, Geist and Instrument Serif, Phosphor icons and flat 1px borders.
+
+See [docs/m3-testing.md](docs/m3-testing.md) for setup, validation results and the acceptance checklist.

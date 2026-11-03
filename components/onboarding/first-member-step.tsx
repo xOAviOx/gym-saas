@@ -1,6 +1,6 @@
-import { FileSpreadsheetIcon, UserPlusIcon } from 'lucide-react';
 import Link from 'next/link';
 
+import { FileSpreadsheetIcon, UserPlusIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { copy } from '@/lib/copy';
 
@@ -9,12 +9,12 @@ const t = copy.onboarding.firstMember;
 export function FirstMemberStep() {
   return (
     <div className="grid gap-4">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="animate-enter grid gap-3 [--index:1] sm:grid-cols-2">
         <Link
           href="/members/import"
-          className="group bg-card hover:border-primary focus-visible:ring-ring/40 flex flex-col gap-3 rounded-xl border p-5 transition-colors duration-150 outline-none focus-visible:ring-3"
+          className="group bg-card hover:shadow-lift focus-visible:ring-ring/20 flex flex-col gap-4 rounded-xl border p-5 transition-shadow duration-200 outline-none focus-visible:ring-3 md:p-6"
         >
-          <span className="bg-success-soft text-success inline-flex size-11 items-center justify-center rounded-lg">
+          <span className="bg-muted text-foreground inline-flex size-10 items-center justify-center rounded-md">
             <FileSpreadsheetIcon aria-hidden="true" />
           </span>
           <span className="grid gap-1">
@@ -24,9 +24,9 @@ export function FirstMemberStep() {
         </Link>
         <Link
           href="/members/new"
-          className="group bg-card hover:border-primary focus-visible:ring-ring/40 flex flex-col gap-3 rounded-xl border p-5 transition-colors duration-150 outline-none focus-visible:ring-3"
+          className="group bg-card hover:shadow-lift focus-visible:ring-ring/20 flex flex-col gap-4 rounded-xl border p-5 transition-shadow duration-200 outline-none focus-visible:ring-3 md:p-6"
         >
-          <span className="bg-success-soft text-success inline-flex size-11 items-center justify-center rounded-lg">
+          <span className="bg-muted text-foreground inline-flex size-10 items-center justify-center rounded-md">
             <UserPlusIcon aria-hidden="true" />
           </span>
           <span className="grid gap-1">

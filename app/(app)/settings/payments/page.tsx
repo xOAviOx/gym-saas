@@ -30,17 +30,20 @@ export default async function PaymentSettingsPage() {
   const webhookUrl = `${env.NEXT_PUBLIC_APP_URL}/api/webhooks/cashfree`;
   return (
     <>
-      <Link href="/more" className="text-primary mb-4 inline-flex min-h-11 items-center text-sm">
+      <Link
+        href="/more"
+        className="text-muted-foreground hover:text-foreground mb-4 inline-flex min-h-11 items-center text-sm transition-colors"
+      >
         {copy.nav.more}
       </Link>
       <PageHeader
         title={copy.paymentSettings.title}
         description={copy.paymentSettings.description}
       />
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="animate-enter grid gap-5 [--index:1] lg:grid-cols-2">
         <section
           aria-labelledby="upi-title"
-          className="bg-card grid content-start gap-5 rounded-xl border p-5"
+          className="bg-card grid content-start gap-5 rounded-xl border p-5 md:p-6"
         >
           <div>
             <h2 id="upi-title" className="text-base font-semibold">
@@ -65,7 +68,7 @@ export default async function PaymentSettingsPage() {
         </section>
         <section
           aria-labelledby="cashfree-title"
-          className="bg-card grid content-start gap-5 rounded-xl border p-5"
+          className="bg-card grid content-start gap-5 rounded-xl border p-5 md:p-6"
         >
           <div>
             <h2 id="cashfree-title" className="text-base font-semibold">

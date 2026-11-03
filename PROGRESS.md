@@ -4,19 +4,21 @@ State of GymDesk as of 3 November 2026. Start here to see what is done, what is 
 
 ## Milestone status
 
-| Milestone | Scope                                                                                          | Status     |
-| --------- | ---------------------------------------------------------------------------------------------- | ---------- |
-| M0        | Scaffold, tooling, CI, design tokens, shell, auth, gym creation, team roles, RLS, env         | **Done**   |
-| M1        | Plans, members CRUD, memberships, member detail, Excel import                                  | **Done**   |
-| M2        | Invoices, GST, numbering, payments, direct UPI, claims, Cashfree, PDF receipts, Dues           | **Validating** |
-| M3        | Attendance, QR, kiosk                                                                         | Not started |
-| M4        | Reminders, WhatsApp providers, templates                                                       | Not started |
-| M5        | Today dashboard, Reports, Expenses, CSV                                                        | Not started |
-| M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs                | Not started |
+| Milestone | Scope                                                                                 | Status         |
+| --------- | ------------------------------------------------------------------------------------- | -------------- |
+| M0        | Scaffold, tooling, CI, design tokens, shell, auth, gym creation, team roles, RLS, env | **Done**       |
+| M1        | Plans, members CRUD, memberships, member detail, Excel import                         | **Done**       |
+| M2        | Invoices, GST, numbering, payments, direct UPI, claims, Cashfree, PDF receipts, Dues  | **Validating** |
+| M3        | Attendance, QR, kiosk                                                                 | **Validating** |
+| M4        | Reminders, WhatsApp providers, templates                                              | Not started    |
+| M5        | Today dashboard, Reports, Expenses, CSV                                               | Not started    |
+| M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        | Not started    |
 
 ## Git history
 
 ```
+M3: attendance, QR check-in, kiosk and minimalist restyle
+705065d Add agent handoff docs: ABOUT_PROJECT, PROGRESS, FUTURE_PLAN
 aa20c72 M2: GST invoices, Cashfree payments, pay links and dues collection
 95a6eab M1: members, plans, memberships, directory and Excel import
 e71d06d M0: GymDesk foundation: Next.js 16 + Supabase schema/RLS, auth, onboarding, app shell
@@ -24,14 +26,23 @@ e71d06d M0: GymDesk foundation: Next.js 16 + Supabase schema/RLS, auth, onboardi
 
 Branch: `main`. One commit per milestone, in the `M<n>: <summary>` style.
 
-## Uncommitted work (in flight)
+## M3 status
 
-`package.json` and `pnpm-lock.yaml` have uncommitted additions:
+M3 and the app-wide minimalist restyle are committed together as `M3: attendance, QR check-in, kiosk and minimalist restyle`:
 
-- `jsqr` — QR decoding in the browser (for the M3 kiosk/scanner)
-- `@phosphor-icons/react` — icon set, intended for the M3 kiosk UI
+- Migration `20261103000012_attendance.sql` (applied locally, types regenerated).
+- Attendance screen, member check-in QR and card page, kiosk mode, attendance settings (`features/attendance/`, `components/attendance/`, `lib/attendance/`).
+- Restyle: warm monochrome tokens in `app/globals.css`, Geist + Instrument Serif, Phosphor icons through `components/icons.tsx`. `lucide-react` was removed; `jsqr` and `@phosphor-icons/react` were added.
 
-No source code uses these yet. This is dependency prep for **M3: Attendance, QR, kiosk**. If you are starting M3, these are already installed and `pnpm install`-ed; verify the lockfile before committing. `app/(app)/attendance/page.tsx` is still the M0 placeholder shell page.
+All automated checks pass (see `docs/m3-testing.md`). Still to do before marking M3 done: the browser walkthrough at 390/1280 px, camera scanning on a real phone and tablet, and axe scans.
+
+## What M3 delivers
+
+- Attendance screen: desk search and check-in, camera QR scanning (BarcodeDetector with a jsQR fallback), hourly and 7-day charts, a day-by-day list with method, kiosk and override tags.
+- `check_in_member` is the only check-in write path; a second scan within five minutes is a duplicate. With **Block expired members** on, owners and managers can override, staff need the kiosk PIN.
+- Kiosk PIN hash moved to `organization_kiosk` (no policies) with a five-try, five-minute lockout.
+- Signed, non-expiring member QR codes bound to `members.qr_version`; **Replace code** stops the old code. Shareable `/p/card/<token>` page.
+- Kiosk mode on a paired device (httpOnly device cookie, hashed in the database, service-role-only SQL functions, per-device rate limits); exit needs the PIN; devices can be turned off from settings.
 
 ## What M2 delivered (all implemented and validated locally)
 
@@ -47,16 +58,16 @@ No source code uses these yet. This is dependency prep for **M3: Attendance, QR,
 
 ## Latest validation run (M2, local Supabase + production build)
 
-| Check                          | Result                                                                    |
-| ------------------------------ | ------------------------------------------------------------------------- |
-| `pnpm lint` / `typecheck` / `build` | Passed                                                              |
-| `pnpm test` (unit)             | 137 tests passed                                                          |
-| `pnpm test:rls`                | 32 tests passed                                                           |
-| `pnpm format:check`            | Passed                                                                    |
-| `pnpm audit --audit-level high`| Passed (dev-only `minimatch` moderate advisory GHSA-g3hv-75wg-m249 remains) |
-| Generated DB types             | Matched applied schema                                                    |
-| Browser workflows              | Owner, anonymous member and staff flows at 360/390 px; main screens at 1280 px; no failed requests or errors |
-| PDFs                           | Tax invoice (open + with UPI QR), paid receipt with reversal, void document — GSTIN, place of supply, SAC, CGST/SGST and totals checked |
+| Check                               | Result                                                                                                                                  |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint` / `typecheck` / `build` | Passed                                                                                                                                  |
+| `pnpm test` (unit)                  | 137 tests passed                                                                                                                        |
+| `pnpm test:rls`                     | 32 tests passed                                                                                                                         |
+| `pnpm format:check`                 | Passed                                                                                                                                  |
+| `pnpm audit --audit-level high`     | Passed (dev-only `minimatch` moderate advisory GHSA-g3hv-75wg-m249 remains)                                                             |
+| Generated DB types                  | Matched applied schema                                                                                                                  |
+| Browser workflows                   | Owner, anonymous member and staff flows at 360/390 px; main screens at 1280 px; no failed requests or errors                            |
+| PDFs                                | Tax invoice (open + with UPI QR), paid receipt with reversal, void document — GSTIN, place of supply, SAC, CGST/SGST and totals checked |
 
 ### Issues found and fixed during M2 validation
 
@@ -73,6 +84,9 @@ No source code uses these yet. This is dependency prep for **M3: Attendance, QR,
 - The Playwright suite (planned for M6).
 
 ## Known gotchas
+
+- The camera (QR scanning) works only on `localhost` or HTTPS.
+- Changing `PORTAL_TOKEN_SECRET` invalidates every member check-in QR code as well as pay links.
 
 - `pnpm db:reset` destroys the local database. On a database whose data matters, use `pnpm exec supabase migration up --local` instead.
 - Cashfree accepts only HTTPS webhook/return URLs; with a local `http://` app URL, GymDesk omits them and you must use **Check payment status** manually.

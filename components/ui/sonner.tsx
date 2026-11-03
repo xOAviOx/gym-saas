@@ -1,14 +1,15 @@
 'use client';
 
+import type { CSSProperties } from 'react';
+import { Toaster as Sonner, type ToasterProps } from 'sonner';
+
 import {
   CircleCheckIcon,
   InfoIcon,
   Loader2Icon,
   OctagonXIcon,
   TriangleAlertIcon,
-} from 'lucide-react';
-import type { CSSProperties } from 'react';
-import { Toaster as Sonner, type ToasterProps } from 'sonner';
+} from '@/components/icons';
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (

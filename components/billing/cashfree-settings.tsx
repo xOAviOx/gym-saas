@@ -95,7 +95,7 @@ function CredentialsDialog({
                       {ENVIRONMENTS.map(([value, label]) => (
                         <label
                           key={value}
-                          className="has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-success-soft flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 text-sm transition-colors"
+                          className="has-[[data-state=checked]]:border-foreground has-[[data-state=checked]]:bg-muted/60 flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 text-sm transition-colors"
                         >
                           <RadioGroupItem value={value} />
                           {label}
@@ -175,14 +175,14 @@ export function CashfreeSettings({
       <div className="flex flex-wrap items-center gap-2">
         <span
           className={cn(
-            'inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-xs font-medium',
+            'inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-[11px] leading-4 font-medium tracking-[0.05em] uppercase',
             connection ? 'bg-success-soft text-success' : 'bg-muted text-muted-foreground',
           )}
         >
           {connection ? copy.paymentSettings.connected : copy.paymentSettings.notConnected}
         </span>
         {connection?.environment === 'sandbox' ? (
-          <span className="bg-warning-soft text-warning inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-xs font-medium">
+          <span className="bg-warning-soft text-warning inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-[11px] leading-4 font-medium tracking-[0.05em] uppercase">
             {copy.gateway.sandbox}
           </span>
         ) : null}
@@ -191,7 +191,7 @@ export function CashfreeSettings({
         <dl className="grid gap-2 text-sm">
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">{copy.paymentSettings.appId}</dt>
-            <dd className="text-right break-all">{connection.appId}</dd>
+            <dd className="text-right font-mono break-all">{connection.appId}</dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">{copy.paymentSettings.environment}</dt>
@@ -241,7 +241,7 @@ export function CashfreeSettings({
               value={webhookUrl}
               aria-label={copy.paymentSettings.webhookTitle}
               onFocus={(event) => event.currentTarget.select()}
-              className="text-muted-foreground"
+              className="text-muted-foreground font-mono text-sm md:text-xs"
             />
             <CopyButton value={webhookUrl} copiedMessage={copy.paymentSettings.webhookCopied} />
           </div>

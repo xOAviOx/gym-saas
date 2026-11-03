@@ -1,10 +1,10 @@
 'use client';
 
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
-import { IndianRupeeIcon, SearchIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 
+import { IndianRupeeIcon, SearchIcon } from '@/components/icons';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,12 +31,12 @@ function RowFlags({ row }: { row: DuesRow }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {row.pendingClaims ? (
-        <span className="bg-warning-soft text-warning inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-xs font-medium">
+        <span className="bg-warning-soft text-warning inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-[11px] leading-4 font-medium tracking-[0.05em] uppercase">
           {copy.dues.claimsBadge(row.pendingClaims)}
         </span>
       ) : null}
       {row.openLink ? (
-        <span className="bg-info-soft text-info inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-xs font-medium">
+        <span className="bg-info-soft text-info inline-flex min-h-6 items-center rounded-full px-2.5 py-1 text-[11px] leading-4 font-medium tracking-[0.05em] uppercase">
           {copy.dues.linkBadge}
         </span>
       ) : null}
@@ -62,7 +62,8 @@ function duesColumns(today: string): ColumnDef<DuesRow>[] {
         <div className="grid gap-1 py-1">
           <span className="font-medium">{row.original.fullName}</span>
           <span className="text-muted-foreground text-xs">
-            {row.original.memberCode} · {formatPhoneNational(row.original.phone)}
+            <span className="font-mono">{row.original.memberCode}</span> ·{' '}
+            {formatPhoneNational(row.original.phone)}
           </span>
         </div>
       ),
@@ -72,7 +73,7 @@ function duesColumns(today: string): ColumnDef<DuesRow>[] {
       header: copy.dues.invoice,
       cell: ({ row }) => (
         <div className="grid justify-items-start gap-1.5">
-          <span className="text-sm">{row.original.invoiceNumber}</span>
+          <span className="font-mono text-sm">{row.original.invoiceNumber}</span>
           <InvoiceStatusBadge status={row.original.status} />
         </div>
       ),
@@ -151,13 +152,18 @@ export function DuesList({
   const nothingOpen = summary.counts.all === 0 && summary.counts.claims === 0;
   return (
     <div className="grid gap-4">
-      <section aria-label={copy.dues.summaryLabel} className="grid grid-cols-2 gap-3">
+      <section
+        aria-label={copy.dues.summaryLabel}
+        className="animate-enter grid grid-cols-2 gap-3 [--index:1]"
+      >
         <Link
           href={duesUrl(q, 'all')}
-          className="bg-card hover:border-primary/50 focus-visible:ring-ring/40 grid gap-1 rounded-xl border p-4 transition-colors outline-none focus-visible:ring-3"
+          className="bg-card border-border hover:shadow-lift focus-visible:ring-ring/20 grid gap-2 rounded-xl border p-4 transition-shadow duration-200 outline-none focus-visible:ring-3 md:p-5"
         >
-          <span className="text-muted-foreground text-sm">{copy.dues.outstanding}</span>
-          <span className="tabular text-2xl font-semibold md:text-3xl">
+          <span className="text-muted-foreground text-[11px] leading-4 font-medium tracking-[0.05em] uppercase">
+            {copy.dues.outstanding}
+          </span>
+          <span className="tabular text-2xl leading-tight font-semibold tracking-tight md:text-3xl">
             {formatMoney(summary.outstanding)}
           </span>
           <span className="text-muted-foreground text-xs">
@@ -167,14 +173,16 @@ export function DuesList({
         <Link
           href={duesUrl(q, 'overdue')}
           className={cn(
-            'bg-card hover:border-primary/50 focus-visible:ring-ring/40 grid gap-1 rounded-xl border p-4 transition-colors outline-none focus-visible:ring-3',
-            filter === 'overdue' && 'border-primary',
+            'bg-card border-border hover:shadow-lift focus-visible:ring-ring/20 grid gap-2 rounded-xl border p-4 transition-shadow duration-200 outline-none focus-visible:ring-3 md:p-5',
+            filter === 'overdue' && 'border-foreground',
           )}
         >
-          <span className="text-muted-foreground text-sm">{copy.dues.overdue}</span>
+          <span className="text-muted-foreground text-[11px] leading-4 font-medium tracking-[0.05em] uppercase">
+            {copy.dues.overdue}
+          </span>
           <span
             className={cn(
-              'tabular text-2xl font-semibold md:text-3xl',
+              'tabular text-2xl leading-tight font-semibold tracking-tight md:text-3xl',
               summary.overdue > 0 && 'text-danger',
             )}
           >
@@ -217,8 +225,8 @@ export function DuesList({
             className={cn(
               'inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-sm transition-colors duration-150',
               filter === value
-                ? 'bg-success-soft border-primary text-primary font-medium'
-                : 'bg-card text-muted-foreground hover:border-zinc-400',
+                ? 'bg-card border-foreground text-foreground font-medium'
+                : 'bg-card text-muted-foreground hover:border-input hover:text-foreground',
               value === 'claims' &&
                 summary.counts.claims > 0 &&
                 filter !== value &&
@@ -254,8 +262,8 @@ export function DuesList({
           }
         />
       ) : (
-        <div className="bg-card overflow-hidden rounded-xl border">
-          <ul className="divide-y lg:hidden">
+        <div className="bg-card border-border animate-enter overflow-hidden rounded-xl border [--index:2]">
+          <ul className="divide-border divide-y lg:hidden">
             {rows.map(({ original: row }) => (
               <li key={row.id}>
                 <Link
@@ -271,7 +279,8 @@ export function DuesList({
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground min-w-0 truncate text-xs">
-                      {row.invoiceNumber} · {row.memberCode}
+                      <span className="font-mono">{row.invoiceNumber}</span> ·{' '}
+                      <span className="font-mono">{row.memberCode}</span>
                     </span>
                     <DueLabel row={row} today={today} />
                   </div>
@@ -281,7 +290,7 @@ export function DuesList({
             ))}
           </ul>
           <table className="hidden w-full text-left lg:table">
-            <thead className="text-muted-foreground bg-muted/30 border-b text-xs">
+            <thead className="text-muted-foreground border-border border-b text-[11px] tracking-[0.05em] uppercase">
               {table.getHeaderGroups().map((group) => (
                 <tr key={group.id}>
                   {group.headers.map((header) => (
@@ -292,7 +301,7 @@ export function DuesList({
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-border divide-y">
               {rows.map((row) => (
                 <tr key={row.id} className="hover:bg-muted/30">
                   {row.getVisibleCells().map((cell) => (

@@ -13,7 +13,7 @@ export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
   return (
     <span
       className={cn(
-        'inline-flex min-h-6 shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-medium',
+        'inline-flex min-h-6 shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] leading-4 font-medium tracking-[0.05em] uppercase',
         tones[status],
       )}
     >

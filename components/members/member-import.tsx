@@ -396,7 +396,7 @@ export function MemberImport() {
                     </p>
                   </div>
                   <span
-                    className={`shrink-0 rounded-full px-2 py-1 text-xs ${row.status === 'ready' ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning'}`}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] leading-4 font-medium tracking-[0.05em] uppercase ${row.status === 'ready' ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning'}`}
                   >
                     {row.status === 'ready'
                       ? copy.memberImport.ready

@@ -1,5 +1,4 @@
-import { CheckIcon } from 'lucide-react';
-
+import { CheckIcon } from '@/components/icons';
 import { copy } from '@/lib/copy';
 import { cn } from '@/lib/utils';
 
@@ -26,7 +25,7 @@ export function Steps({ current, labels }: StepsProps) {
                 className={cn(
                   'inline-flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium',
                   done && 'border-primary bg-primary text-primary-foreground',
-                  active && 'border-primary text-primary',
+                  active && 'border-foreground text-foreground',
                   !done && !active && 'text-muted-foreground',
                 )}
               >

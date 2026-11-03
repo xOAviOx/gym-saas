@@ -11,7 +11,10 @@ export default async function ImportPage() {
   await requireOrg();
   return (
     <>
-      <Link href="/members" className="text-primary mb-4 inline-flex min-h-11 items-center text-sm">
+      <Link
+        href="/members"
+        className="text-muted-foreground hover:text-foreground mb-4 inline-flex min-h-11 items-center text-sm transition-colors"
+      >
         {copy.members.back}
       </Link>
       <PageHeader title={copy.memberImport.title} description={copy.memberImport.description} />
