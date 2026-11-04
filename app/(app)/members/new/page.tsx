@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { CreateMemberForm } from '@/components/members/create-member-form';
 import { PageHeader } from '@/components/shared/page-header';
+import { readMessagingSettings } from '@/features/messaging/settings';
 import { getPlans } from '@/features/plans/queries';
 import { requireOrg } from '@/lib/auth/session';
 import { copy } from '@/lib/copy';
@@ -29,6 +30,7 @@ export default async function NewMemberPage() {
         plans={plans}
         gstEnabled={ctx.org.gst_enabled}
         requestId={randomUUID()}
+        defaultLanguage={readMessagingSettings(ctx.org.settings).defaultLanguage}
       />
     </>
   );

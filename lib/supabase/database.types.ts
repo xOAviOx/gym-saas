@@ -327,14 +327,14 @@ isOneToOne: false
                   ]
                 },"members": {
                   Row: {
-                    "address": string | null,"alt_phone": string | null,"consent_messaging": boolean,"consent_recorded_at": string | null,"created_at": string,"deleted_at": string | null,"dob": string | null,"email": string | null,"emergency_contact_name": string | null,"emergency_contact_phone": string | null,"full_name": string,"gender": string | null,"id": string,"joined_on": string,"member_code": string,"notes": string | null,"org_id": string,"phone": string,"photo_url": string | null,"qr_version": number,"referred_by_member_id": string | null,"source": Database["public"]['Enums']["member_source"],"status": string,"tags": (string)[],"updated_at": string
+                    "address": string | null,"alt_phone": string | null,"consent_messaging": boolean,"consent_recorded_at": string | null,"created_at": string,"deleted_at": string | null,"dob": string | null,"email": string | null,"emergency_contact_name": string | null,"emergency_contact_phone": string | null,"full_name": string,"gender": string | null,"id": string,"joined_on": string,"member_code": string,"notes": string | null,"org_id": string,"phone": string,"photo_url": string | null,"preferred_language": string,"qr_version": number,"referred_by_member_id": string | null,"source": Database["public"]['Enums']["member_source"],"status": string,"tags": (string)[],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"alt_phone"?: string | null,"consent_messaging"?: boolean,"consent_recorded_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"dob"?: string | null,"email"?: string | null,"emergency_contact_name"?: string | null,"emergency_contact_phone"?: string | null,"full_name": string,"gender"?: string | null,"id"?: string,"joined_on"?: string,"member_code"?: string,"notes"?: string | null,"org_id": string,"phone": string,"photo_url"?: string | null,"qr_version"?: number,"referred_by_member_id"?: string | null,"source"?: Database["public"]['Enums']["member_source"],"status"?: string,"tags"?: (string)[],"updated_at"?: string
+                    "address"?: string | null,"alt_phone"?: string | null,"consent_messaging"?: boolean,"consent_recorded_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"dob"?: string | null,"email"?: string | null,"emergency_contact_name"?: string | null,"emergency_contact_phone"?: string | null,"full_name": string,"gender"?: string | null,"id"?: string,"joined_on"?: string,"member_code"?: string,"notes"?: string | null,"org_id": string,"phone": string,"photo_url"?: string | null,"preferred_language"?: string,"qr_version"?: number,"referred_by_member_id"?: string | null,"source"?: Database["public"]['Enums']["member_source"],"status"?: string,"tags"?: (string)[],"updated_at"?: string
                   }
                   Update: {
-                    "address"?: string | null,"alt_phone"?: string | null,"consent_messaging"?: boolean,"consent_recorded_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"dob"?: string | null,"email"?: string | null,"emergency_contact_name"?: string | null,"emergency_contact_phone"?: string | null,"full_name"?: string,"gender"?: string | null,"id"?: string,"joined_on"?: string,"member_code"?: string,"notes"?: string | null,"org_id"?: string,"phone"?: string,"photo_url"?: string | null,"qr_version"?: number,"referred_by_member_id"?: string | null,"source"?: Database["public"]['Enums']["member_source"],"status"?: string,"tags"?: (string)[],"updated_at"?: string
+                    "address"?: string | null,"alt_phone"?: string | null,"consent_messaging"?: boolean,"consent_recorded_at"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"dob"?: string | null,"email"?: string | null,"emergency_contact_name"?: string | null,"emergency_contact_phone"?: string | null,"full_name"?: string,"gender"?: string | null,"id"?: string,"joined_on"?: string,"member_code"?: string,"notes"?: string | null,"org_id"?: string,"phone"?: string,"photo_url"?: string | null,"preferred_language"?: string,"qr_version"?: number,"referred_by_member_id"?: string | null,"source"?: Database["public"]['Enums']["member_source"],"status"?: string,"tags"?: (string)[],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -403,14 +403,14 @@ isOneToOne: false
                   ]
                 },"message_logs": {
                   Row: {
-                    "body": string,"channel": Database["public"]['Enums']["message_channel"],"created_at": string,"error": string | null,"id": string,"invoice_id": string | null,"member_id": string,"org_id": string,"provider_message_id": string | null,"reminder_date": string | null,"scheduled_for": string | null,"sent_at": string | null,"sent_by": string | null,"status": Database["public"]['Enums']["message_status"],"template_key": string,"updated_at": string
+                    "api_attempted_at": string | null,"body": string,"channel": Database["public"]['Enums']["message_channel"],"created_at": string,"error": string | null,"id": string,"invoice_id": string | null,"language": string,"member_id": string,"org_id": string,"payment_id": string | null,"provider_message_id": string | null,"reminder_date": string | null,"scheduled_for": string | null,"sent_at": string | null,"sent_by": string | null,"status": Database["public"]['Enums']["message_status"],"template_key": string,"updated_at": string,"variables": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "body": string,"channel": Database["public"]['Enums']["message_channel"],"created_at"?: string,"error"?: string | null,"id"?: string,"invoice_id"?: string | null,"member_id": string,"org_id": string,"provider_message_id"?: string | null,"reminder_date"?: string | null,"scheduled_for"?: string | null,"sent_at"?: string | null,"sent_by"?: string | null,"status"?: Database["public"]['Enums']["message_status"],"template_key": string,"updated_at"?: string
+                    "api_attempted_at"?: string | null,"body": string,"channel": Database["public"]['Enums']["message_channel"],"created_at"?: string,"error"?: string | null,"id"?: string,"invoice_id"?: string | null,"language"?: string,"member_id": string,"org_id": string,"payment_id"?: string | null,"provider_message_id"?: string | null,"reminder_date"?: string | null,"scheduled_for"?: string | null,"sent_at"?: string | null,"sent_by"?: string | null,"status"?: Database["public"]['Enums']["message_status"],"template_key": string,"updated_at"?: string,"variables"?: NonNullable<Json>
                   }
                   Update: {
-                    "body"?: string,"channel"?: Database["public"]['Enums']["message_channel"],"created_at"?: string,"error"?: string | null,"id"?: string,"invoice_id"?: string | null,"member_id"?: string,"org_id"?: string,"provider_message_id"?: string | null,"reminder_date"?: string | null,"scheduled_for"?: string | null,"sent_at"?: string | null,"sent_by"?: string | null,"status"?: Database["public"]['Enums']["message_status"],"template_key"?: string,"updated_at"?: string
+                    "api_attempted_at"?: string | null,"body"?: string,"channel"?: Database["public"]['Enums']["message_channel"],"created_at"?: string,"error"?: string | null,"id"?: string,"invoice_id"?: string | null,"language"?: string,"member_id"?: string,"org_id"?: string,"payment_id"?: string | null,"provider_message_id"?: string | null,"reminder_date"?: string | null,"scheduled_for"?: string | null,"sent_at"?: string | null,"sent_by"?: string | null,"status"?: Database["public"]['Enums']["message_status"],"template_key"?: string,"updated_at"?: string,"variables"?: NonNullable<Json>
                   }
                   Relationships: [
                     {
@@ -438,8 +438,40 @@ isOneToOne: false
       referencedRelation: "organizations"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "message_logs_payment_id_fkey"
+      columns: ["payment_id"]
+isOneToOne: false
+      referencedRelation: "payments"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "message_logs_sent_by_fkey"
       columns: ["sent_by"]
+isOneToOne: false
+      referencedRelation: "team_members"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"message_templates": {
+                  Row: {
+                    "body": string,"created_at": string,"id": string,"language": string,"org_id": string,"template_key": string,"updated_at": string,"updated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"created_at"?: string,"id"?: string,"language": string,"org_id": string,"template_key": string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"id"?: string,"language"?: string,"org_id"?: string,"template_key"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "message_templates_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "message_templates_updated_by_fkey"
+      columns: ["updated_by"]
 isOneToOne: false
       referencedRelation: "team_members"
       referencedColumns: ["id"]
@@ -467,14 +499,14 @@ isOneToOne: true
                   ]
                 },"organization_secrets": {
                   Row: {
-                    "cashfree_app_id": string | null,"cashfree_environment": string | null,"cashfree_secret_key_enc": string | null,"cashfree_verified_at": string | null,"created_at": string,"org_id": string,"razorpay_key_id": string | null,"razorpay_key_secret_enc": string | null,"razorpay_webhook_secret_enc": string | null,"updated_at": string,"whatsapp_access_token_enc": string | null,"whatsapp_phone_number_id": string | null
+                    "cashfree_app_id": string | null,"cashfree_environment": string | null,"cashfree_secret_key_enc": string | null,"cashfree_verified_at": string | null,"created_at": string,"org_id": string,"razorpay_key_id": string | null,"razorpay_key_secret_enc": string | null,"razorpay_webhook_secret_enc": string | null,"updated_at": string,"whatsapp_access_token_enc": string | null,"whatsapp_display_phone": string | null,"whatsapp_phone_number_id": string | null,"whatsapp_verified_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "cashfree_app_id"?: string | null,"cashfree_environment"?: string | null,"cashfree_secret_key_enc"?: string | null,"cashfree_verified_at"?: string | null,"created_at"?: string,"org_id": string,"razorpay_key_id"?: string | null,"razorpay_key_secret_enc"?: string | null,"razorpay_webhook_secret_enc"?: string | null,"updated_at"?: string,"whatsapp_access_token_enc"?: string | null,"whatsapp_phone_number_id"?: string | null
+                    "cashfree_app_id"?: string | null,"cashfree_environment"?: string | null,"cashfree_secret_key_enc"?: string | null,"cashfree_verified_at"?: string | null,"created_at"?: string,"org_id": string,"razorpay_key_id"?: string | null,"razorpay_key_secret_enc"?: string | null,"razorpay_webhook_secret_enc"?: string | null,"updated_at"?: string,"whatsapp_access_token_enc"?: string | null,"whatsapp_display_phone"?: string | null,"whatsapp_phone_number_id"?: string | null,"whatsapp_verified_at"?: string | null
                   }
                   Update: {
-                    "cashfree_app_id"?: string | null,"cashfree_environment"?: string | null,"cashfree_secret_key_enc"?: string | null,"cashfree_verified_at"?: string | null,"created_at"?: string,"org_id"?: string,"razorpay_key_id"?: string | null,"razorpay_key_secret_enc"?: string | null,"razorpay_webhook_secret_enc"?: string | null,"updated_at"?: string,"whatsapp_access_token_enc"?: string | null,"whatsapp_phone_number_id"?: string | null
+                    "cashfree_app_id"?: string | null,"cashfree_environment"?: string | null,"cashfree_secret_key_enc"?: string | null,"cashfree_verified_at"?: string | null,"created_at"?: string,"org_id"?: string,"razorpay_key_id"?: string | null,"razorpay_key_secret_enc"?: string | null,"razorpay_webhook_secret_enc"?: string | null,"updated_at"?: string,"whatsapp_access_token_enc"?: string | null,"whatsapp_display_phone"?: string | null,"whatsapp_phone_number_id"?: string | null,"whatsapp_verified_at"?: string | null
                   }
                   Relationships: [
                     {
@@ -779,6 +811,9 @@ isOneToOne: false
 "assert_org_role":
 { Args: { "p_org": string,"p_roles": (Database["public"]['Enums']["team_role"])[] }; Returns: undefined
                            },
+"begin_api_send":
+{ Args: { "p_message_id": string }; Returns: boolean
+                           },
 "cancel_membership":
 { Args: { "p_membership_id": string,"p_reason": string }; Returns: {
               "created_at": string,
@@ -974,6 +1009,11 @@ isOneToOne: false
 "daily_maintenance":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"daily_message_candidates":
+{ Args: { "p_org"?: string }; Returns: {
+              "facts": Json,"invoice_id": string,"kind": string,"lang": string,"member_id": string,"org_id": string
+            }[]
+                           },
 "dashboard_stats":
 { Args: { "p_org": string }; Returns: Json
                            },
@@ -982,6 +1022,9 @@ isOneToOne: false
                            },
 "enroll_member":
 { Args: { "p_discount_amount": number,"p_member_id": string,"p_notes"?: string,"p_org": string,"p_plan_id": string,"p_request_id": string,"p_start_date": string }; Returns: Json
+                           },
+"expire_stale_messages":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "fiscal_year_label":
 { Args: { "p_date": string }; Returns: string
@@ -1048,6 +1091,35 @@ isOneToOne: false
 "list_members":
 { Args: { "p_filter"?: string,"p_org": string,"p_page"?: number,"p_page_size"?: number,"p_search"?: string }; Returns: Json
                            },
+"mark_message_sent":
+{ Args: { "p_message_id": string }; Returns: {
+              "api_attempted_at": string | null,
+"body": string,
+"channel": Database["public"]['Enums']["message_channel"],
+"created_at": string,
+"error": string | null,
+"id": string,
+"invoice_id": string | null,
+"language": string,
+"member_id": string,
+"org_id": string,
+"payment_id": string | null,
+"provider_message_id": string | null,
+"reminder_date": string | null,
+"scheduled_for": string | null,
+"sent_at": string | null,
+"sent_by": string | null,
+"status": Database["public"]['Enums']["message_status"],
+"template_key": string,
+"updated_at": string,
+"variables": NonNullable<Json>
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "message_logs"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "member_data_record":
 { Args: { "p_base": Omit<Database["public"]['Tables']["members"]['Row'], Database["public"]['Tables']["members"]['ComputedFields']>,"p_data": Json }; Returns: {
               "address": string | null,
@@ -1069,6 +1141,7 @@ isOneToOne: false
 "org_id": string,
 "phone": string,
 "photo_url": string | null,
+"preferred_language": string,
 "qr_version": number,
 "referred_by_member_id": string | null,
 "source": Database["public"]['Enums']["member_source"],
@@ -1082,6 +1155,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"message_kind_enabled":
+{ Args: { "p_kind": string,"p_settings": Json }; Returns: boolean
+                           },
 "my_org_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
@@ -1091,6 +1167,35 @@ isOneToOne: false
 "next_counter_value":
 { Args: { "p_key": string,"p_org": string }; Returns: number
                            },
+"prepare_message":
+{ Args: { "p_body": string,"p_invoice_id"?: string,"p_kind": string,"p_language": string,"p_member_id": string,"p_org": string,"p_payment_id"?: string,"p_reminder_date"?: string,"p_variables"?: Json }; Returns: {
+              "api_attempted_at": string | null,
+"body": string,
+"channel": Database["public"]['Enums']["message_channel"],
+"created_at": string,
+"error": string | null,
+"id": string,
+"invoice_id": string | null,
+"language": string,
+"member_id": string,
+"org_id": string,
+"payment_id": string | null,
+"provider_message_id": string | null,
+"reminder_date": string | null,
+"scheduled_for": string | null,
+"sent_at": string | null,
+"sent_by": string | null,
+"status": Database["public"]['Enums']["message_status"],
+"template_key": string,
+"updated_at": string,
+"variables": NonNullable<Json>
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "message_logs"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "purge_member_data":
 { Args: { "p_member_id": string }; Returns: string
                            },
@@ -1124,6 +1229,35 @@ isOneToOne: false
                           SetofOptions: {
         from: "*"
         to: "payments"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"record_message_result":
+{ Args: { "p_error": string,"p_message_id": string,"p_provider_message_id": string,"p_sent_by"?: string }; Returns: {
+              "api_attempted_at": string | null,
+"body": string,
+"channel": Database["public"]['Enums']["message_channel"],
+"created_at": string,
+"error": string | null,
+"id": string,
+"invoice_id": string | null,
+"language": string,
+"member_id": string,
+"org_id": string,
+"payment_id": string | null,
+"provider_message_id": string | null,
+"reminder_date": string | null,
+"scheduled_for": string | null,
+"sent_at": string | null,
+"sent_by": string | null,
+"status": Database["public"]['Enums']["message_status"],
+"template_key": string,
+"updated_at": string,
+"variables": NonNullable<Json>
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "message_logs"
         isOneToOne: true
         isSetofReturn: false
       } },
@@ -1184,6 +1318,9 @@ isOneToOne: false
 "remove_cashfree_credentials":
 { Args: { "p_org": string }; Returns: undefined
                            },
+"remove_whatsapp_credentials":
+{ Args: { "p_org": string }; Returns: undefined
+                           },
 "reset_member_qr":
 { Args: { "p_member_id": string }; Returns: number
                            },
@@ -1208,6 +1345,7 @@ isOneToOne: false
 "org_id": string,
 "phone": string,
 "photo_url": string | null,
+"preferred_language": string,
 "qr_version": number,
 "referred_by_member_id": string | null,
 "source": Database["public"]['Enums']["member_source"],
@@ -1285,11 +1423,20 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"save_message_template":
+{ Args: { "p_body": string,"p_kind": string,"p_language": string,"p_org": string }; Returns: undefined
+                           },
+"save_messaging_settings":
+{ Args: { "p_org": string,"p_settings": Json }; Returns: undefined
+                           },
 "save_onboarding_plans":
 { Args: { "p_org": string,"p_plans": Json }; Returns: number
                            },
 "save_plan":
 { Args: { "p_data"?: Json,"p_org": string,"p_plan_id"?: string }; Returns: string
+                           },
+"save_whatsapp_credentials":
+{ Args: { "p_display_phone": string,"p_org": string,"p_phone_number_id": string,"p_token_enc": string }; Returns: undefined
                            },
 "schedule_organization_deletion":
 { Args: { "p_org": string }; Returns: {
@@ -1341,9 +1488,41 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"setting_days":
+{ Args: { "p_default": (number)[],"p_key": string,"p_settings": Json }; Returns: (number)[]
+                           },
 "shares_org_with":
 { Args: { "p_user": string }; Returns: boolean
                            },
+"skip_message":
+{ Args: { "p_message_id": string }; Returns: {
+              "api_attempted_at": string | null,
+"body": string,
+"channel": Database["public"]['Enums']["message_channel"],
+"created_at": string,
+"error": string | null,
+"id": string,
+"invoice_id": string | null,
+"language": string,
+"member_id": string,
+"org_id": string,
+"payment_id": string | null,
+"provider_message_id": string | null,
+"reminder_date": string | null,
+"scheduled_for": string | null,
+"sent_at": string | null,
+"sent_by": string | null,
+"status": Database["public"]['Enums']["message_status"],
+"template_key": string,
+"updated_at": string,
+"variables": NonNullable<Json>
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "message_logs"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "soft_delete_member":
 { Args: { "p_member_id": string }; Returns: {
               "address": string | null,
@@ -1365,6 +1544,7 @@ isOneToOne: false
 "org_id": string,
 "phone": string,
 "photo_url": string | null,
+"preferred_language": string,
 "qr_version": number,
 "referred_by_member_id": string | null,
 "source": Database["public"]['Enums']["member_source"],
@@ -1486,6 +1666,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"valid_day_list":
+{ Args: { "p_max": number,"p_min": number,"p_value": Json }; Returns: boolean
+                           },
 "verify_kiosk_pin":
 { Args: { "p_org": string,"p_pin": string }; Returns: string
                            },
@@ -1523,12 +1706,15 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"whatsapp_api_ready":
+{ Args: { "p_org": string }; Returns: boolean
+                           },
 "write_audit_log":
 { Args: { "p_action": string,"p_after"?: Json,"p_before"?: Json,"p_entity_id"?: string,"p_entity_type": string,"p_org": string }; Returns: undefined
                            }
           }
           Enums: {
-            "check_in_flag": "expiring"|"expired"|"dues_pending","check_in_method": "manual"|"qr","collection_mode": "upi_direct"|"razorpay"|"cashfree","collection_provider": "upi_direct"|"razorpay"|"cashfree","collection_request_status": "pending"|"paid"|"expired"|"cancelled","expense_category": "rent"|"salaries"|"electricity"|"equipment"|"maintenance"|"marketing"|"supplies"|"other","invoice_status": "unpaid"|"partially_paid"|"paid"|"void","member_source": "walk_in"|"instagram"|"referral"|"google"|"other","membership_status": "upcoming"|"active"|"frozen"|"expired"|"cancelled","message_channel": "whatsapp_manual"|"whatsapp_api","message_status": "prepared"|"sent"|"delivered"|"failed","payment_claim_status": "pending"|"confirmed"|"rejected","payment_method": "cash"|"upi"|"razorpay"|"card"|"bank_transfer"|"cashfree","plan_type": "duration"|"sessions","team_role": "owner"|"manager"|"staff"
+            "check_in_flag": "expiring"|"expired"|"dues_pending","check_in_method": "manual"|"qr","collection_mode": "upi_direct"|"razorpay"|"cashfree","collection_provider": "upi_direct"|"razorpay"|"cashfree","collection_request_status": "pending"|"paid"|"expired"|"cancelled","expense_category": "rent"|"salaries"|"electricity"|"equipment"|"maintenance"|"marketing"|"supplies"|"other","invoice_status": "unpaid"|"partially_paid"|"paid"|"void","member_source": "walk_in"|"instagram"|"referral"|"google"|"other","membership_status": "upcoming"|"active"|"frozen"|"expired"|"cancelled","message_channel": "whatsapp_manual"|"whatsapp_api","message_status": "prepared"|"sent"|"delivered"|"failed"|"skipped","payment_claim_status": "pending"|"confirmed"|"rejected","payment_method": "cash"|"upi"|"razorpay"|"card"|"bank_transfer"|"cashfree","plan_type": "duration"|"sessions","team_role": "owner"|"manager"|"staff"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1644,7 +1830,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "check_in_flag": ["expiring", "expired", "dues_pending"],"check_in_method": ["manual", "qr"],"collection_mode": ["upi_direct", "razorpay", "cashfree"],"collection_provider": ["upi_direct", "razorpay", "cashfree"],"collection_request_status": ["pending", "paid", "expired", "cancelled"],"expense_category": ["rent", "salaries", "electricity", "equipment", "maintenance", "marketing", "supplies", "other"],"invoice_status": ["unpaid", "partially_paid", "paid", "void"],"member_source": ["walk_in", "instagram", "referral", "google", "other"],"membership_status": ["upcoming", "active", "frozen", "expired", "cancelled"],"message_channel": ["whatsapp_manual", "whatsapp_api"],"message_status": ["prepared", "sent", "delivered", "failed"],"payment_claim_status": ["pending", "confirmed", "rejected"],"payment_method": ["cash", "upi", "razorpay", "card", "bank_transfer", "cashfree"],"plan_type": ["duration", "sessions"],"team_role": ["owner", "manager", "staff"]
+            "check_in_flag": ["expiring", "expired", "dues_pending"],"check_in_method": ["manual", "qr"],"collection_mode": ["upi_direct", "razorpay", "cashfree"],"collection_provider": ["upi_direct", "razorpay", "cashfree"],"collection_request_status": ["pending", "paid", "expired", "cancelled"],"expense_category": ["rent", "salaries", "electricity", "equipment", "maintenance", "marketing", "supplies", "other"],"invoice_status": ["unpaid", "partially_paid", "paid", "void"],"member_source": ["walk_in", "instagram", "referral", "google", "other"],"membership_status": ["upcoming", "active", "frozen", "expired", "cancelled"],"message_channel": ["whatsapp_manual", "whatsapp_api"],"message_status": ["prepared", "sent", "delivered", "failed", "skipped"],"payment_claim_status": ["pending", "confirmed", "rejected"],"payment_method": ["cash", "upi", "razorpay", "card", "bank_transfer", "cashfree"],"plan_type": ["duration", "sessions"],"team_role": ["owner", "manager", "staff"]
           }
         }
 } as const

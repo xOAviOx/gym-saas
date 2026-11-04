@@ -1510,6 +1510,378 @@ describe('M3 attendance, kiosk devices and member QR codes', () => {
   });
 });
 
+describe('M4 messages, templates and WhatsApp settings', () => {
+  type PrepareArgs = Database['public']['Functions']['prepare_message']['Args'];
+  type MessagingSettings = {
+    reminder_days_before: number[];
+    expired_reminder_days_after: number[];
+    dues_reminder_days_after: number[];
+    default_language: 'en' | 'hi';
+    messaging_provider: 'manual' | 'whatsapp_api';
+    message_kinds: Record<string, boolean>;
+  };
+  let staff: { client: Client; userId: string };
+  let planId: string;
+  let shortPlanId: string;
+  let nextPhone = 40000000;
+  const today = todayIST();
+  const baseSettings: MessagingSettings = {
+    reminder_days_before: [7, 3, 0],
+    expired_reminder_days_after: [1],
+    dues_reminder_days_after: [3, 7],
+    default_language: 'en',
+    messaging_provider: 'manual',
+    message_kinds: {},
+  };
+
+  async function member(
+    name: string,
+    options: { consent?: boolean; plan?: string; dob?: string; language?: 'en' | 'hi' } = {},
+  ) {
+    const id = randomUUID();
+    const created = await a.client.rpc('create_member', {
+      p_org: a.orgId,
+      p_member_id: id,
+      p_data: {
+        full_name: name,
+        phone: `+9194${++nextPhone}`,
+        consent_messaging: options.consent ?? true,
+        ...(options.dob ? { dob: options.dob } : {}),
+        ...(options.language ? { preferred_language: options.language } : {}),
+      },
+      ...(options.plan ? { p_membership: { plan_id: options.plan, start_date: today } } : {}),
+    });
+    expect(created.error).toBeNull();
+    return id;
+  }
+  function welcome(memberId: string, extra: Partial<PrepareArgs> = {}): PrepareArgs {
+    return {
+      p_org: a.orgId,
+      p_member_id: memberId,
+      p_kind: 'welcome',
+      p_language: 'en',
+      p_body: 'Welcome to the gym!',
+      ...extra,
+    };
+  }
+  async function prepared(memberId: string) {
+    const result = await staff.client.rpc('prepare_message', welcome(memberId));
+    expect(result.error).toBeNull();
+    return result.data!;
+  }
+  async function stored(id: string) {
+    const row = await admin.from('message_logs').select('*').eq('id', id).single();
+    expect(row.error).toBeNull();
+    return row.data!;
+  }
+  async function saveSettings(client: Client, changes: Partial<MessagingSettings> = {}) {
+    return client.rpc('save_messaging_settings', {
+      p_org: a.orgId,
+      p_settings: { ...baseSettings, ...changes },
+    });
+  }
+
+  beforeAll(async () => {
+    staff = await signedInClient(`rls-m4-staff-${run}@example.test`, 'Passw0rd!rls');
+    const team = await admin
+      .from('team_members')
+      .insert({ org_id: a.orgId, user_id: staff.userId, role: 'staff' });
+    expect(team.error).toBeNull();
+    const plans = await Promise.all(
+      [30, 8].map((days) =>
+        a.client.rpc('save_plan', {
+          p_org: a.orgId,
+          p_data: {
+            name: `M4 ${days} days`,
+            type: 'duration',
+            duration_days: days,
+            price: 1000,
+            is_active: true,
+          },
+        }),
+      ),
+    );
+    for (const plan of plans) expect(plan.error).toBeNull();
+    planId = plans[0]!.data!;
+    shortPlanId = plans[1]!.data!;
+  });
+  afterAll(async () => {
+    if (staff) expect((await admin.auth.admin.deleteUser(staff.userId)).error).toBeNull();
+  });
+
+  it('prepares one welcome and one receipt per payment, for consenting members of the gym only', async () => {
+    const id = await member('M4 Welcome', { plan: planId });
+    const first = await prepared(id);
+    expect(first).toMatchObject({ status: 'prepared', channel: 'whatsapp_manual' });
+    expect((await prepared(id)).id).toBe(first.id);
+
+    const silent = await member('M4 No Consent', { consent: false });
+    const refused = await staff.client.rpc('prepare_message', welcome(silent));
+    expect(refused.error?.message).toBe('messaging_consent_missing');
+
+    const crossMember = await a.client.rpc('prepare_message', welcome(b.memberId));
+    expect(crossMember.error?.message).toBe('member_not_found');
+    const crossOrg = await a.client.rpc('prepare_message', welcome(b.memberId, { p_org: b.orgId }));
+    expect(crossOrg.error?.code).toBe('42501');
+    const reminder = await staff.client.rpc(
+      'prepare_message',
+      welcome(id, { p_kind: 'membership_expiring', p_reminder_date: today }),
+    );
+    expect(reminder.error?.code).toBe('42501');
+
+    const invoice = await admin.from('invoices').select('id').eq('member_id', id).single();
+    expect(invoice.error).toBeNull();
+    const payment = await staff.client.rpc('record_payment', {
+      p_org: a.orgId,
+      p_invoice_id: invoice.data!.id,
+      p_request_id: randomUUID(),
+      p_amount: 400,
+      p_method: 'cash',
+    });
+    expect(payment.error).toBeNull();
+    const receipt = welcome(id, {
+      p_kind: 'payment_receipt',
+      p_payment_id: payment.data!.id,
+      p_invoice_id: invoice.data!.id,
+      p_body: 'Received ₹400.',
+    });
+    const r1 = await staff.client.rpc('prepare_message', receipt);
+    expect(r1.error).toBeNull();
+    const r2 = await staff.client.rpc('prepare_message', receipt);
+    expect(r2.data?.id).toBe(r1.data?.id);
+    const other = await member('M4 Other');
+    const wrongPayment = await staff.client.rpc('prepare_message', {
+      ...receipt,
+      p_member_id: other,
+      p_invoice_id: null as unknown as string,
+    });
+    expect(wrongPayment.error?.message).toBe('payment_not_found');
+
+    const direct = await staff.client.from('message_logs').insert({
+      org_id: a.orgId,
+      member_id: id,
+      channel: 'whatsapp_manual',
+      template_key: 'birthday',
+      body: 'Forged',
+      reminder_date: today,
+    });
+    expect(direct.error?.code).toBe('42501');
+    const update = await a.client
+      .from('message_logs')
+      .update({ status: 'sent' })
+      .eq('id', first.id)
+      .select('id');
+    expect(update.data ?? []).toEqual([]);
+    expect((await stored(first.id)).status).toBe('prepared');
+    const foreign = await b.client.from('message_logs').select('id').eq('org_id', a.orgId);
+    expect(foreign.data ?? []).toEqual([]);
+  });
+
+  it('marks, skips and claims WhatsApp API sends exactly once', async () => {
+    const sentId = (await prepared(await member('M4 Mark'))).id;
+    const marked = await staff.client.rpc('mark_message_sent', { p_message_id: sentId });
+    expect(marked.error).toBeNull();
+    expect(marked.data).toMatchObject({ status: 'sent', channel: 'whatsapp_manual' });
+    expect(marked.data?.sent_by).not.toBeNull();
+    const late = await staff.client.rpc('skip_message', { p_message_id: sentId });
+    expect(late.error?.message).toBe('message_not_pending');
+
+    const skipId = (await prepared(await member('M4 Skip'))).id;
+    expect((await staff.client.rpc('skip_message', { p_message_id: skipId })).data?.status).toBe(
+      'skipped',
+    );
+    expect((await staff.client.rpc('skip_message', { p_message_id: skipId })).error).toBeNull();
+    const foreign = await b.client.rpc('mark_message_sent', { p_message_id: skipId });
+    expect(foreign.error?.message).toBe('message_not_found');
+
+    const apiId = (await prepared(await member('M4 Api'))).id;
+    for (const client of [a.client, staff.client]) {
+      expect((await client.rpc('begin_api_send', { p_message_id: apiId })).error).not.toBeNull();
+      const forged = await client.rpc('record_message_result', {
+        p_message_id: apiId,
+        p_provider_message_id: 'wamid.forged',
+        p_error: '',
+      });
+      expect(forged.error).not.toBeNull();
+    }
+    expect((await admin.rpc('begin_api_send', { p_message_id: apiId })).data).toBe(true);
+    expect((await admin.rpc('begin_api_send', { p_message_id: apiId })).data).toBe(false);
+    const busy = await staff.client.rpc('mark_message_sent', { p_message_id: apiId });
+    expect(busy.error?.message).toBe('message_sending');
+    const failed = await admin.rpc('record_message_result', {
+      p_message_id: apiId,
+      p_provider_message_id: '',
+      p_error: 'template_missing',
+    });
+    expect(failed.data).toMatchObject({ status: 'failed', error: 'template_missing' });
+    expect((await admin.rpc('begin_api_send', { p_message_id: apiId })).data).toBe(true);
+    const sent = await admin.rpc('record_message_result', {
+      p_message_id: apiId,
+      p_provider_message_id: 'wamid.test',
+      p_error: '',
+      p_sent_by: staff.userId,
+    });
+    expect(sent.data).toMatchObject({
+      status: 'sent',
+      channel: 'whatsapp_api',
+      provider_message_id: 'wamid.test',
+      error: null,
+      sent_by: null,
+    });
+    expect((await admin.rpc('begin_api_send', { p_message_id: apiId })).data).toBe(false);
+  });
+
+  it('limits messaging settings, templates and WhatsApp credentials to owners and managers', async () => {
+    expect((await saveSettings(staff.client)).error?.code).toBe('42501');
+    expect((await saveSettings(a.client, { reminder_days_before: [31] })).error?.message).toBe(
+      'invalid_input',
+    );
+    const unknownKey = await a.client.rpc('save_messaging_settings', {
+      p_org: a.orgId,
+      p_settings: { ...baseSettings, block_expired_checkin: false },
+    });
+    expect(unknownKey.error?.message).toBe('invalid_input');
+    const noApi = await saveSettings(a.client, { messaging_provider: 'whatsapp_api' });
+    expect(noApi.error?.message).toBe('whatsapp_not_configured');
+    expect((await saveSettings(a.client, { message_kinds: { welcome: false } })).error).toBeNull();
+    const disabled = await staff.client.rpc('prepare_message', welcome(await member('M4 Off')));
+    expect(disabled.error?.message).toBe('message_kind_disabled');
+    expect((await saveSettings(a.client)).error).toBeNull();
+
+    const template = {
+      p_org: a.orgId,
+      p_kind: 'birthday',
+      p_language: 'hi',
+      p_body: 'जन्मदिन मुबारक {name}!',
+    };
+    expect((await staff.client.rpc('save_message_template', template)).error?.code).toBe('42501');
+    expect((await a.client.rpc('save_message_template', template)).error).toBeNull();
+    const tooLong = await a.client.rpc('save_message_template', {
+      ...template,
+      p_body: 'x'.repeat(1001),
+    });
+    expect(tooLong.error?.message).toBe('invalid_input');
+    expect(
+      (await staff.client.from('message_templates').select('body').eq('org_id', a.orgId)).data,
+    ).toEqual([{ body: template.p_body }]);
+    expect(
+      (await b.client.from('message_templates').select('id').eq('org_id', a.orgId)).data ?? [],
+    ).toEqual([]);
+    expect(
+      (await a.client.rpc('save_message_template', { ...template, p_body: '' })).error,
+    ).toBeNull();
+    expect((await admin.from('message_templates').select('id').eq('org_id', a.orgId)).data).toEqual(
+      [],
+    );
+
+    const credentials = {
+      p_org: a.orgId,
+      p_phone_number_id: '123456789012345',
+      p_token_enc: 'v1.aaaa.bbbb.cccc',
+      p_display_phone: '+91 98765 43210',
+    };
+    expect((await staff.client.rpc('save_whatsapp_credentials', credentials)).error?.code).toBe(
+      '42501',
+    );
+    const plain = await a.client.rpc('save_whatsapp_credentials', {
+      ...credentials,
+      p_token_enc: 'EAAplaintext',
+    });
+    expect(plain.error?.message).toBe('invalid_input');
+    expect((await a.client.rpc('save_whatsapp_credentials', credentials)).error).toBeNull();
+    const hidden = await staff.client
+      .from('organization_secrets')
+      .select('whatsapp_access_token_enc')
+      .eq('org_id', a.orgId);
+    expect(hidden.data ?? []).toEqual([]);
+    expect((await saveSettings(a.client, { messaging_provider: 'whatsapp_api' })).error).toBeNull();
+    const apiMessage = await prepared(await member('M4 Channel'));
+    expect(apiMessage.channel).toBe('whatsapp_api');
+
+    expect(
+      (await staff.client.rpc('remove_whatsapp_credentials', { p_org: a.orgId })).error?.code,
+    ).toBe('42501');
+    expect(
+      (await a.client.rpc('remove_whatsapp_credentials', { p_org: a.orgId })).error,
+    ).toBeNull();
+    expect((await stored(apiMessage.id)).channel).toBe('whatsapp_manual');
+    const org = await admin.from('organizations').select('settings').eq('id', a.orgId).single();
+    expect((org.data?.settings as { messaging_provider?: string }).messaging_provider).toBe(
+      'manual',
+    );
+  });
+
+  it('lists daily reminder and birthday candidates once per day, for consenting members only', async () => {
+    expect((await saveSettings(a.client, { reminder_days_before: [7] })).error).toBeNull();
+    const ending = await member('M4 Ending', { plan: shortPlanId, language: 'hi' });
+    const silent = await member('M4 Ending Silent', { plan: shortPlanId, consent: false });
+    const birthday = await member('M4 Birthday', { plan: planId, dob: `1992-${today.slice(5)}` });
+
+    for (const client of [a.client, staff.client]) {
+      expect(
+        (await client.rpc('daily_message_candidates', { p_org: a.orgId })).error,
+      ).not.toBeNull();
+      expect((await client.rpc('expire_stale_messages')).error).not.toBeNull();
+    }
+    const listed = await admin.rpc('daily_message_candidates', { p_org: a.orgId });
+    expect(listed.error).toBeNull();
+    const rows = listed.data ?? [];
+    const endingRow = rows.find((row) => row.member_id === ending);
+    expect(endingRow).toMatchObject({ kind: 'membership_expiring', lang: 'hi', org_id: a.orgId });
+    expect(endingRow?.facts).toMatchObject({ days: 7, end_date: addDays(today, 7) });
+    expect(rows.find((row) => row.member_id === silent)).toBeUndefined();
+    expect(rows.find((row) => row.member_id === birthday)?.kind).toBe('birthday');
+    expect(rows.every((row) => row.org_id === a.orgId)).toBe(true);
+
+    const reminder = await admin.rpc('prepare_message', {
+      p_org: a.orgId,
+      p_member_id: ending,
+      p_kind: 'membership_expiring',
+      p_language: 'hi',
+      p_body: 'आपकी मेंबरशिप खत्म हो रही है।',
+      p_reminder_date: today,
+    });
+    expect(reminder.error).toBeNull();
+    const again = await admin.rpc('daily_message_candidates', { p_org: a.orgId });
+    expect(again.data?.find((row) => row.member_id === ending)).toBeUndefined();
+
+    const stale = await admin
+      .from('message_logs')
+      .insert({
+        org_id: a.orgId,
+        member_id: birthday,
+        channel: 'whatsapp_manual',
+        template_key: 'welcome',
+        body: 'Old welcome',
+        created_at: new Date(Date.now() - 4 * 86_400_000).toISOString(),
+      })
+      .select('id')
+      .single();
+    expect(stale.error).toBeNull();
+    expect((await admin.rpc('expire_stale_messages')).error).toBeNull();
+    expect(await stored(stale.data!.id)).toMatchObject({ status: 'skipped', error: 'expired' });
+    expect((await saveSettings(a.client)).error).toBeNull();
+  });
+
+  it('does not expose messaging functions or templates to anonymous users', async () => {
+    const anon = createClient<Database>(SUPABASE_URL, ANON_KEY, {
+      auth: { persistSession: false },
+    });
+    const messageId = randomUUID();
+    const calls = [
+      anon.rpc('prepare_message', welcome(a.memberId)),
+      anon.rpc('mark_message_sent', { p_message_id: messageId }),
+      anon.rpc('skip_message', { p_message_id: messageId }),
+      anon.rpc('begin_api_send', { p_message_id: messageId }),
+      anon.rpc('daily_message_candidates', {}),
+      anon.rpc('save_messaging_settings', { p_org: a.orgId, p_settings: baseSettings }),
+      anon.rpc('remove_whatsapp_credentials', { p_org: a.orgId }),
+    ];
+    for (const call of calls) expect((await call).error).not.toBeNull();
+    expect((await anon.from('message_templates').select('id')).error).not.toBeNull();
+    expect((await anon.from('message_logs').select('id')).error).not.toBeNull();
+  });
+});
 type Tenant = {
   client: Client;
   userId: string;

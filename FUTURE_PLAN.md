@@ -2,23 +2,26 @@
 
 What to build next in GymDesk, in order. Read `ABOUT_PROJECT.md` first for invariants and conventions — they apply to every item below. Update this file as work lands, and move completed items into `PROGRESS.md`.
 
-## M3 — Attendance, QR, kiosk (committed, validating)
+## M3 — Attendance, QR, kiosk (committed as `c7d2f3d`, validating)
 
 Done: `check_in_member` RPC (no direct writes), five-minute duplicate window, session consumption, block-expired with owner/manager or PIN override, signed member QR codes with `qr_version` revocation and `/p/card/<token>` page, paired kiosk devices with service-role-only functions, attendance screen and settings. See `docs/m3-testing.md`.
 
 Still open:
 
 - Device testing: camera scanning on a real phone and tablet, kiosk on the front-desk tablet, axe scans.
-- The nightly maintenance job (`/api/cron/daily`) does not exist yet. Attendance does not need it, because status is computed live at check-in; build it with M4 reminders, which also run on Vercel Cron.
 
-## Immediate next up: M4 — Reminders, WhatsApp providers, templates
+## M4 — Reminders, WhatsApp providers, templates (committed, validating)
 
-- WhatsApp message providers (per-gym credentials encrypted with `SECRETS_ENCRYPTION_KEY`, following the Cashfree credentials pattern: verify before save, never show the secret again, keep ciphertext out of audit rows).
-- Payment-due reminders through the 10:00 IST Vercel Cron job; member consent to messaging (`messaging_consent` already exists on members and defaults to false — respect it everywhere).
-- Editable message templates per gym with the standard variable interpolation.
-- India-specific phone normalization is already in `lib/phone.ts`; keep using it.
+Done: consent-only WhatsApp messages (expiring, expired, dues with pay link, receipt, welcome with card link, birthday) in English and Hindi; `prepare_message` as the only write path with one-message-per-event unique indexes; manual `wa.me` queue; WhatsApp Cloud API with verified, encrypted per-gym tokens and approved `gymdesk_<kind>` templates; per-gym message text; messaging settings; `/api/cron/daily` at 10:00 IST. See `docs/m4-testing.md`.
 
-## M5 — Today dashboard, Reports, Expenses, CSV
+Still open:
+
+- Browser walkthrough at 390/1280 px and axe scans of Messages and messaging settings.
+- A live Cloud API send with approved English and Hindi templates, and Vercel Cron on a deployment.
+- Delivery and read receipts need a Meta webhook (`delivered` status exists but nothing sets it yet). Consider it in M6 with the other public endpoints.
+- Members who reply STOP are not detected automatically; staff turn off consent on the profile.
+
+## Immediate next up: M5 — Today dashboard, Reports, Expenses, CSV
 
 - **Today dashboard**: replace the M0 placeholder with check-ins today, dues collected today, expiring memberships, and other owner KPIs. The `20261030000004_dashboard.sql` migration already exists as a foundation.
 - **Reports**: revenue (by method, by plan, by staff), attendance trends, overdue members. IST month/financial-year boundaries.
@@ -44,6 +47,7 @@ Still open:
 - [ ] axe accessibility scans of the M2 screens.
 - [ ] Resolve or re-check the dev-only `minimatch` moderate advisory (GHSA-g3hv-75wg-m249) — safe to carry while it stays dev-only.
 - [ ] M3 device checks: camera scanning on a real phone and tablet, kiosk on the front-desk tablet, axe scans (checklist in `docs/m3-testing.md`).
+- [ ] M4 checks: browser walkthrough, live WhatsApp Cloud API send with approved templates, Vercel Cron on a deployment, axe scans (checklist in `docs/m4-testing.md`).
 
 ## Working rules for any agent picking this up
 

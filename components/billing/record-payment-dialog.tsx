@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { announceMessage } from '@/components/messages/announce-message';
 import { applyActionResult } from '@/components/shared/apply-action-result';
 import { FormDialog } from '@/components/shared/form-dialog';
 import { SubmitButton } from '@/components/shared/submit-button';
@@ -69,6 +70,7 @@ export function RecordPaymentDialog({
       if (applyActionResult(result, form.setError)) {
         toast.success(copy.payments.recorded);
         if (result.data.linkCancelled) toast.info(copy.payments.linkCancelled);
+        announceMessage(result.data.message, 'receipt');
         setOpen(false);
         router.refresh();
       }

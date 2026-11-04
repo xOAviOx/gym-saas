@@ -78,6 +78,26 @@ export function MemberFields({ today }: { today: string }) {
           </FormItem>
         )}
       />
+      <FormField
+        control={form.control}
+        name="preferredLanguage"
+        render={({ field }) => (
+          <FormItem hasDescription>
+            <FormLabel>{t.language}</FormLabel>
+            <FormControl>
+              <select className={nativeSelectClass} {...field} value={field.value ?? 'en'}>
+                {Object.entries(copy.languages).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </FormControl>
+            <FormDescription>{t.languageHelp}</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       <details className="bg-card rounded-xl border p-4">
         <summary className="min-h-11 cursor-pointer py-3 text-sm font-medium">
           {t.moreDetails}

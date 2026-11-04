@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { queuePaymentReceipt } from '@/features/messaging/hooks';
 import { copy } from '@/lib/copy';
 import { parseSecretKey, openSecret, sealSecret } from '@/lib/crypto/secret-box';
 import { env } from '@/lib/env';
@@ -189,7 +190,7 @@ export async function reconcileCashfreeLink(
           .filter(Boolean)
           .join(' · ')
           .slice(0, 100);
-        const { error } = await admin.rpc('record_gateway_payment', {
+        const { data: recordedPayment, error } = await admin.rpc('record_gateway_payment', {
           p_org: request.orgId,
           p_collection_request_id: request.id,
           p_gateway_payment_id: payment.cfPaymentId,
@@ -201,6 +202,7 @@ export async function reconcileCashfreeLink(
         if (!known.has(payment.cfPaymentId)) {
           known.add(payment.cfPaymentId);
           recorded += 1;
+          if (recordedPayment) await queuePaymentReceipt(admin, recordedPayment.id, null);
         }
       }
     }

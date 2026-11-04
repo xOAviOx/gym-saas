@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { queuePaymentReceipt, type QueuedMessage } from '@/features/messaging/hooks';
 import { PRIVILEGED_ROLES } from '@/lib/auth/roles';
 import { authorize } from '@/lib/auth/session';
 import { copy } from '@/lib/copy';
@@ -68,7 +69,7 @@ async function retireLinksQuietly(orgId: string, invoiceId: string): Promise<boo
 
 export async function recordPayment(
   input: unknown,
-): Promise<ActionResult<{ paymentId: string; linkCancelled: boolean }>> {
+): Promise<ActionResult<{ paymentId: string; linkCancelled: boolean; message: QueuedMessage }>> {
   return runAction(async () => {
     const { supabase, ctx } = await authorize();
     const data = parseInput(recordPaymentSchema, input);
@@ -91,8 +92,9 @@ export async function recordPayment(
       }),
     );
     const linkCancelled = await retireLinksQuietly(ctx.org.id, data.invoiceId);
+    const message = await queuePaymentReceipt(supabase, payment.id, ctx.teamMemberId);
     revalidateInvoice(data.invoiceId, invoice.member_id);
-    return { paymentId: payment.id, linkCancelled };
+    return { paymentId: payment.id, linkCancelled, message };
   });
 }
 
@@ -164,15 +166,18 @@ async function loadClaim(
 
 export async function confirmClaim(
   input: unknown,
-): Promise<ActionResult<{ linkCancelled: boolean }>> {
+): Promise<ActionResult<{ linkCancelled: boolean; message: QueuedMessage }>> {
   return runAction(async () => {
     const { supabase, ctx } = await authorize();
     const data = parseInput(claimDecisionSchema, input);
     const claim = await loadClaim(supabase, ctx.org.id, data.invoiceId, data.claimId);
-    unwrap(await supabase.rpc('confirm_payment_claim', { p_claim_id: claim.id }));
+    const confirmed = unwrap(await supabase.rpc('confirm_payment_claim', { p_claim_id: claim.id }));
     const linkCancelled = await retireLinksQuietly(ctx.org.id, data.invoiceId);
+    const message = confirmed.payment_id
+      ? await queuePaymentReceipt(supabase, confirmed.payment_id, ctx.teamMemberId)
+      : null;
     revalidateInvoice(data.invoiceId, claim.member_id);
-    return { linkCancelled };
+    return { linkCancelled, message };
   });
 }
 

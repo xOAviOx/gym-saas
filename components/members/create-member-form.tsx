@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { PlanFields } from '@/components/memberships/plan-fields';
+import { announceMessage } from '@/components/messages/announce-message';
 import { applyActionResult } from '@/components/shared/apply-action-result';
 import { SubmitButton } from '@/components/shared/submit-button';
 import { WorkflowSteps } from '@/components/shared/workflow-steps';
@@ -20,6 +21,7 @@ import {
 } from '@/features/members/schema';
 import type { Plan } from '@/features/plans/types';
 import { copy } from '@/lib/copy';
+import type { MessageLanguage } from '@/lib/messaging/templates';
 
 import { MemberFields } from './member-fields';
 
@@ -28,11 +30,13 @@ export function CreateMemberForm({
   plans,
   gstEnabled,
   requestId,
+  defaultLanguage,
 }: {
   today: string;
   plans: Plan[];
   gstEnabled: boolean;
   requestId: string;
+  defaultLanguage: MessageLanguage;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -40,7 +44,7 @@ export function CreateMemberForm({
   const form = useForm<CreateMemberInput>({
     resolver: zodResolver(createMemberSchema, undefined, { raw: true }),
     defaultValues: {
-      ...emptyMemberValues(today),
+      ...emptyMemberValues(today, defaultLanguage),
       requestId,
       planId: plans[0]?.id ?? '',
       startDate: today,
@@ -57,6 +61,7 @@ export function CreateMemberForm({
       const result = await createMember(values);
       if (applyActionResult(result, form.setError)) {
         toast.success(copy.members.created);
+        announceMessage(result.data.message, 'welcome');
         router.push(`/members/${result.data.id}`);
         return;
       }
@@ -81,6 +86,7 @@ export function CreateMemberForm({
       'notes',
       'tags',
       'consentMessaging',
+      'preferredLanguage',
     ]);
     if (valid) {
       setStep(2);

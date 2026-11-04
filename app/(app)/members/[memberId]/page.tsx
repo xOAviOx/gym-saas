@@ -97,6 +97,7 @@ export default async function MemberPage({
     notes: member.notes ?? '',
     tags: member.tags.join(', '),
     consentMessaging: member.consent_messaging,
+    preferredLanguage: member.preferred_language === 'hi' ? 'hi' : 'en',
   };
   const readOnly = !!member.deleted_at;
   const qr = readOnly ? null : memberQrFor(member.id, member.qr_version);
@@ -398,6 +399,10 @@ export default async function MemberPage({
                 <dd className="break-all">{member.email}</dd>
               </div>
             ) : null}
+            <div className="flex justify-between gap-4">
+              <dt className="text-muted-foreground">{copy.members.language}</dt>
+              <dd>{copy.languages[member.preferred_language === 'hi' ? 'hi' : 'en']}</dd>
+            </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">{copy.members.memberSince}</dt>
               <dd>{formatDate(member.joined_on)}</dd>

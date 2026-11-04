@@ -14,6 +14,7 @@ import {
   CaretLeft,
   CaretRight,
   CaretUp,
+  ChatCircleText,
   Check,
   CheckCircle,
   CircleNotch,
@@ -100,6 +101,7 @@ export const Loader2Icon = bold(CircleNotch, 'Loader2Icon');
 export const LockIcon = bold(LockSimple, 'LockIcon');
 export const LogInIcon = bold(SignIn, 'LogInIcon');
 export const LogOutIcon = bold(SignOut, 'LogOutIcon');
+export const MessageIcon = bold(ChatCircleText, 'MessageIcon');
 export const MailCheckIcon = bold(EnvelopeSimpleOpen, 'MailCheckIcon');
 export const MinusIcon = bold(Minus, 'MinusIcon');
 export const OctagonXIcon = bold(XCircle, 'OctagonXIcon');

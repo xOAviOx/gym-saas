@@ -4,6 +4,7 @@ import { moneyInputSchema } from '@/features/plans/schema';
 import { phoneInputSchema } from '@/features/organizations/schema';
 import { copy } from '@/lib/copy';
 import { isDateOnly } from '@/lib/dates';
+import { MESSAGE_LANGUAGES, type MessageLanguage } from '@/lib/messaging/templates';
 
 export const dateInputSchema = z.string().refine(isDateOnly, copy.validation.dateInvalid);
 const optionalPhone = z.union([z.literal(''), phoneInputSchema]).transform((v) => v || null);
@@ -50,6 +51,8 @@ export const memberDetailsSchema = z.strictObject({
       copy.members.tagsHelp,
     ),
   consentMessaging: z.boolean(),
+  /** Left out by imports, so the gym's default language applies. */
+  preferredLanguage: z.enum(MESSAGE_LANGUAGES).optional(),
 });
 
 export const memberIdSchema = z.strictObject({ memberId: z.uuid() });
@@ -83,7 +86,7 @@ export type MemberDetailsInput = z.input<typeof memberDetailsSchema>;
 export type MemberDetailsValues = z.output<typeof memberDetailsSchema>;
 export type CreateMemberInput = z.input<typeof createMemberSchema>;
 
-export function emptyMemberValues(today: string): MemberDetailsInput {
+export function emptyMemberValues(today: string, language?: MessageLanguage): MemberDetailsInput {
   return {
     fullName: '',
     phone: '',
@@ -99,5 +102,6 @@ export function emptyMemberValues(today: string): MemberDetailsInput {
     notes: '',
     tags: '',
     consentMessaging: false,
+    ...(language ? { preferredLanguage: language } : {}),
   };
 }

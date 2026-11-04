@@ -3,6 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 
+import { queueWelcome, type QueuedMessage } from '@/features/messaging/hooks';
 import { PRIVILEGED_ROLES } from '@/lib/auth/roles';
 import { authorize } from '@/lib/auth/session';
 import { copy } from '@/lib/copy';
@@ -19,7 +20,9 @@ function revalidateMember(id: string) {
   revalidatePath('/today');
 }
 
-export async function createMember(input: unknown): Promise<ActionResult<{ id: string }>> {
+export async function createMember(
+  input: unknown,
+): Promise<ActionResult<{ id: string; message: QueuedMessage }>> {
   return runAction(async () => {
     const { supabase, ctx } = await authorize();
     const data = parseInput(createMemberSchema, input);
@@ -57,8 +60,9 @@ export async function createMember(input: unknown): Promise<ActionResult<{ id: s
           : {}),
       }),
     );
+    const message = await queueWelcome(supabase, ctx.org.id, id, ctx.teamMemberId);
     revalidateMember(id);
-    return { id };
+    return { id, message };
   });
 }
 

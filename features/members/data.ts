@@ -17,5 +17,6 @@ export function memberDatabaseData(v: MemberDetailsValues) {
     notes: v.notes,
     tags: v.tags,
     consent_messaging: v.consentMessaging,
+    ...(v.preferredLanguage ? { preferred_language: v.preferredLanguage } : {}),
   };
 }

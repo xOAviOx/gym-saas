@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import { Money } from '@/components/shared/money';
 import { PageHeader } from '@/components/shared/page-header';
 import { StatTile } from '@/components/shared/stat-tile';
 import { getDashboardStats } from '@/features/dashboard/queries';
+import { countPendingMessages } from '@/features/messaging/queries';
 import { requireOrg } from '@/lib/auth/session';
 import { copy } from '@/lib/copy';
 import { formatDate, todayIST } from '@/lib/dates';
@@ -14,7 +16,10 @@ export const metadata: Metadata = { title: copy.today.title };
 export default async function TodayPage() {
   const ctx = await requireOrg();
   const supabase = await createClient();
-  const stats = await getDashboardStats(supabase, ctx.org.id);
+  const [stats, pendingMessages] = await Promise.all([
+    getDashboardStats(supabase, ctx.org.id),
+    countPendingMessages(supabase, ctx.org.id),
+  ]);
 
   return (
     <>
@@ -51,6 +56,15 @@ export default async function TodayPage() {
           className="animate-enter [--index:4]"
         />
       </section>
+      {pendingMessages > 0 ? (
+        <Link
+          href="/messages"
+          className="bg-card hover:shadow-lift focus-visible:ring-ring/20 animate-enter mt-4 flex min-h-14 items-center justify-between gap-3 rounded-xl border px-5 text-sm font-medium transition-shadow duration-200 outline-none [--index:5] focus-visible:ring-3"
+        >
+          {copy.messages.readyCount(pendingMessages)}
+          <span aria-hidden="true">→</span>
+        </Link>
+      ) : null}
     </>
   );
 }

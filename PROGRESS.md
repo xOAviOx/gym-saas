@@ -1,6 +1,6 @@
 # Progress
 
-State of GymDesk as of 3 November 2026. Start here to see what is done, what is in flight, and what is known to be unfinished. Pair with `FUTURE_PLAN.md` for what comes next.
+State of GymDesk as of 4 November 2026. Start here to see what is done, what is in flight, and what is known to be unfinished. Pair with `FUTURE_PLAN.md` for what comes next.
 
 ## Milestone status
 
@@ -10,14 +10,15 @@ State of GymDesk as of 3 November 2026. Start here to see what is done, what is 
 | M1        | Plans, members CRUD, memberships, member detail, Excel import                         | **Done**       |
 | M2        | Invoices, GST, numbering, payments, direct UPI, claims, Cashfree, PDF receipts, Dues  | **Validating** |
 | M3        | Attendance, QR, kiosk                                                                 | **Validating** |
-| M4        | Reminders, WhatsApp providers, templates                                              | Not started    |
+| M4        | Reminders, WhatsApp providers, templates                                              | **Validating** |
 | M5        | Today dashboard, Reports, Expenses, CSV                                               | Not started    |
 | M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        | Not started    |
 
 ## Git history
 
 ```
-M3: attendance, QR check-in, kiosk and minimalist restyle
+M4: WhatsApp reminders, receipts, message templates and daily job
+c7d2f3d M3: attendance, QR check-in, kiosk and minimalist restyle
 705065d Add agent handoff docs: ABOUT_PROJECT, PROGRESS, FUTURE_PLAN
 aa20c72 M2: GST invoices, Cashfree payments, pay links and dues collection
 95a6eab M1: members, plans, memberships, directory and Excel import
@@ -25,6 +26,25 @@ e71d06d M0: GymDesk foundation: Next.js 16 + Supabase schema/RLS, auth, onboardi
 ```
 
 Branch: `main`. One commit per milestone, in the `M<n>: <summary>` style.
+
+## M4 status
+
+M4 is committed as `M4: WhatsApp reminders, receipts, message templates and daily job`:
+
+- Migrations `20261104000013_messaging_enums.sql` and `20261104000014_messaging.sql` (applied locally, types regenerated).
+- Messages queue and history, messaging settings, WhatsApp Cloud API connection and the message text editor (`features/messaging/`, `components/messages/`, `lib/messaging/`, `app/(app)/messages`, `app/(app)/settings/messaging`).
+- Daily job `/api/cron/daily` with `vercel.json` cron at 04:30 UTC (10:00 IST); `lib/cron-auth.ts`, `lib/concurrency.ts`.
+- Receipt and welcome hooks in billing (`recordPayment`, `confirmClaim`, Cashfree reconciliation) and member creation; member message language.
+
+All automated checks pass (see `docs/m4-testing.md`). Still to do before marking M4 done: the browser walkthrough at 390/1280 px, a live WhatsApp Cloud API send with approved templates, Vercel Cron on a deployment, and axe scans.
+
+## What M4 delivers
+
+- WhatsApp messages for consenting members only: membership expiring and expired, dues overdue (with a pay link), payment receipts, welcome (with the check-in card link) and birthday wishes, in English or Hindi per member.
+- Messages are rendered by the app and stored through `prepare_message`; direct writes to `message_logs` are closed. Unique indexes keep one reminder per member per day, one receipt per payment and one welcome per member.
+- Manual provider: staff tap **Send on WhatsApp** (`wa.me` with the text) or **Skip**. WhatsApp Cloud API provider: token verified with Meta, encrypted per gym, sends approved `gymdesk_<kind>` templates; a 10-minute claim makes each message send at most once; failures stay in the queue with a staff-facing reason and **Retry**.
+- Daily job: statuses, maintenance, stale-message expiry (3 days), then today's reminders and birthday wishes (at most one reminder per member per day). Safe to rerun; staff can also prepare today's reminders from Messages.
+- Owner/manager-only messaging settings and per-gym message text with placeholder validation.
 
 ## M3 status
 
@@ -85,13 +105,15 @@ All automated checks pass (see `docs/m3-testing.md`). Still to do before marking
 
 ## Known gotchas
 
+- WhatsApp Cloud API sends use the approved `gymdesk_<kind>` templates in WhatsApp Manager, not the text edited in GymDesk; edited text applies to manual sends. A missing or unapproved template shows as a failed message.
+- `/api/cron/daily` needs `Authorization: Bearer <CRON_SECRET>`; Vercel Cron sends it automatically when `CRON_SECRET` is set in the project.
 - The camera (QR scanning) works only on `localhost` or HTTPS.
 - Changing `PORTAL_TOKEN_SECRET` invalidates every member check-in QR code as well as pay links.
 
 - `pnpm db:reset` destroys the local database. On a database whose data matters, use `pnpm exec supabase migration up --local` instead.
 - Cashfree accepts only HTTPS webhook/return URLs; with a local `http://` app URL, GymDesk omits them and you must use **Check payment status** manually.
 - Sandbox Cashfree keys must never be connected to a gym with real members — sandbox payments are recorded like real ones.
-- Changing `SECRETS_ENCRYPTION_KEY` makes every saved gym credential unusable.
+- Changing `SECRETS_ENCRYPTION_KEY` makes every saved gym credential (Cashfree and WhatsApp) unusable.
 - GYM-One was excluded from competitive research at the user's request; do not add it back.
 
 ## Working directory notes

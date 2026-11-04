@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { FormDialog } from '@/components/shared/form-dialog';
 import { SubmitButton } from '@/components/shared/submit-button';
+import { announceMessage } from '@/components/messages/announce-message';
 import { applyActionResult } from '@/components/shared/apply-action-result';
 import { Button } from '@/components/ui/button';
 import { confirmClaim, rejectClaim, reversePayment, voidInvoice } from '@/features/billing/actions';
@@ -75,6 +76,7 @@ function ConfirmClaimButton({ invoiceId, claim }: { invoiceId: string; claim: In
       if (applyActionResult(result)) {
         toast.success(copy.claims.confirmed);
         if (result.data.linkCancelled) toast.info(copy.payments.linkCancelled);
+        announceMessage(result.data.message, 'receipt');
         setOpen(false);
         router.refresh();
       }

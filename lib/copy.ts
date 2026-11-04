@@ -272,6 +272,8 @@ export const copy = {
     consentHelp: 'Ask for consent before enabling. We record when this changes.',
     consentMissing: 'WhatsApp consent has not been given.',
     consentRecorded: (date: string) => `Messaging consent last recorded on ${date}.`,
+    language: 'Message language',
+    languageHelp: 'Reminders and receipts are sent in this language.',
     moreDetails: 'Additional details',
     nextStep: 'Choose membership',
     create: 'Add member',
@@ -1042,6 +1044,251 @@ export const copy = {
     deviceRevoked: 'Kiosk turned off.',
   },
 
+  languages: {
+    en: 'English',
+    hi: 'हिन्दी (Hindi)',
+  } as const,
+
+  messageKinds: {
+    membership_expiring: 'Membership ending',
+    membership_expired: 'Membership ended',
+    dues_overdue: 'Dues overdue',
+    payment_receipt: 'Payment receipt',
+    welcome: 'Welcome',
+    birthday: 'Birthday wish',
+  } as const,
+
+  messageKindHelp: {
+    membership_expiring: 'Before a membership ends, on the days you choose.',
+    membership_expired: 'After a membership has ended without a renewal.',
+    dues_overdue: 'After an invoice due date, with a link to pay online.',
+    payment_receipt: 'When a payment is recorded, with a link to the receipt.',
+    welcome: 'When you add a member, with their check-in card.',
+    birthday: 'On the birthday of current members.',
+  } as const,
+
+  /** What members receive unless the gym edits the text. Placeholders are listed in lib/messaging/templates.ts. */
+  messageDefaults: {
+    en: {
+      membership_expiring:
+        'Hi {name}, your {plan} membership at {gym} ends on {date}. Renew at the front desk to keep training without a break.',
+      membership_expired:
+        'Hi {name}, your {plan} membership at {gym} ended on {date}. We would love to see you back, so visit the front desk to renew.',
+      dues_overdue:
+        'Hi {name}, {amount} is pending on invoice {invoice} at {gym}. Pay securely here: {link} Thank you!',
+      payment_receipt:
+        'Hi {name}, {gym} received {amount} for invoice {invoice}. Balance due: {balance}. Your receipt: {link} Thank you!',
+      welcome:
+        'Hi {name}, welcome to {gym}! Your member code is {code}. Show this check-in card at the desk: {link} See you at the gym!',
+      birthday:
+        'Happy birthday, {name}! Everyone at {gym} wishes you a healthy and strong year ahead.',
+    },
+    hi: {
+      membership_expiring:
+        'नमस्ते {name}, {gym} में आपकी {plan} मेंबरशिप {date} को खत्म हो रही है। बिना रुके ट्रेनिंग जारी रखने के लिए फ्रंट डेस्क पर रिन्यू करें।',
+      membership_expired:
+        'नमस्ते {name}, {gym} में आपकी {plan} मेंबरशिप {date} को खत्म हो गई है। हम आपको फिर से देखना चाहेंगे, रिन्यू करने के लिए फ्रंट डेस्क पर आएं।',
+      dues_overdue:
+        'नमस्ते {name}, {gym} के इनवॉइस {invoice} पर {amount} बाकी है। यहां सुरक्षित भुगतान करें: {link} धन्यवाद!',
+      payment_receipt:
+        'नमस्ते {name}, {gym} को इनवॉइस {invoice} के लिए {amount} मिल गए हैं। बाकी राशि: {balance}। आपकी रसीद: {link} धन्यवाद!',
+      welcome:
+        'नमस्ते {name}, {gym} में आपका स्वागत है! आपका मेंबर कोड {code} है। डेस्क पर यह चेक-इन कार्ड दिखाएं: {link} जिम में मिलते हैं!',
+      birthday:
+        'जन्मदिन की हार्दिक शुभकामनाएं, {name}! {gym} की पूरी टीम की ओर से आपको स्वस्थ और मज़बूत साल की शुभकामनाएं।',
+    },
+  } as const,
+
+  messages: {
+    title: 'Messages',
+    description: 'Reminders, receipts and wishes for members who agreed to WhatsApp messages.',
+    manage: 'Messages',
+    tabs: 'Message lists',
+    queueTab: 'To send',
+    historyTab: 'History',
+    emptyQueue: 'Nothing to send right now',
+    emptyQueueBody:
+      'Reminders are prepared every day at 10:00. Receipts and welcome messages appear here as they happen.',
+    emptyHistory: 'No messages yet',
+    emptyHistoryBody: 'Sent and skipped messages appear here.',
+    send: 'Send on WhatsApp',
+    sendFor: (name: string) => `Send on WhatsApp to ${name}`,
+    marked: 'Marked as sent.',
+    skip: 'Skip',
+    skipFor: (name: string) => `Skip message to ${name}`,
+    skipped: 'Message skipped.',
+    retry: 'Retry',
+    retrySent: 'Sent on WhatsApp.',
+    retryFailed: 'WhatsApp did not accept the message. The reason is shown on the message.',
+    prepareNow: 'Prepare today’s reminders',
+    preparing: 'Preparing…',
+    preparedNow: (prepared: number, sent: number) =>
+      prepared === 0
+        ? 'No new reminders for today.'
+        : `${prepared} ${prepared === 1 ? 'message' : 'messages'} prepared${sent ? `, ${sent} sent on WhatsApp` : ''}.`,
+    autoNote:
+      'WhatsApp Cloud API is on. Reminders go out automatically at 10:00, and messages that fail stay here.',
+    manualNote:
+      'Tap Send to open WhatsApp with the message ready, then send it from the gym phone.',
+    settings: 'Messaging settings',
+    statuses: {
+      prepared: 'To send',
+      sent: 'Sent',
+      delivered: 'Delivered',
+      failed: 'Failed',
+      skipped: 'Skipped',
+    } as const,
+    channels: {
+      whatsapp_manual: 'Sent by staff',
+      whatsapp_api: 'WhatsApp API',
+    } as const,
+    queuedApi: 'Sending automatically',
+    languageShort: { en: 'English', hi: 'Hindi' } as const,
+    pagination: 'Message history pages',
+    newer: 'Newer',
+    older: 'Older',
+    sentAt: (when: string) => `Sent ${when}`,
+    preparedAt: (when: string) => `Prepared ${when}`,
+    skippedAt: (when: string) => `Skipped ${when}`,
+    expired: 'Not sent within 3 days.',
+    readyCount: (n: number) =>
+      n === 1 ? '1 message ready to send' : `${n} messages ready to send`,
+    receiptQueued: 'Receipt ready to send in Messages.',
+    receiptSent: 'Receipt sent on WhatsApp.',
+    welcomeQueued: 'Welcome message ready to send in Messages.',
+    welcomeSent: 'Welcome message sent on WhatsApp.',
+    receiptFailed: 'The receipt could not be sent on WhatsApp. It is waiting in Messages.',
+    welcomeFailed: 'The welcome message could not be sent on WhatsApp. It is waiting in Messages.',
+    errors: {
+      templateMissing: (name: string, language: string) =>
+        `Template ${name} (${language}) is missing or not yet approved in WhatsApp Manager.`,
+      templateMismatch: (name: string) =>
+        `Template ${name} in WhatsApp Manager does not match the GymDesk text. Copy it again from messaging settings.`,
+      templatePaused: 'This template is paused or disabled in WhatsApp Manager.',
+      undeliverable: 'This number cannot receive WhatsApp messages right now.',
+      marketingLimit: 'WhatsApp held back this promotional message. Send it by hand instead.',
+      optedOut: 'The member has stopped promotional messages on WhatsApp.',
+      notAllowed: 'With a test number, add this phone as a recipient in WhatsApp Manager first.',
+      token: 'The WhatsApp access token is invalid or expired. Reconnect in messaging settings.',
+      billing: 'WhatsApp could not charge your business account. Check payment settings at Meta.',
+      unavailable: 'WhatsApp is not responding. Try again later.',
+      generic: (code: number | null) =>
+        `WhatsApp refused the message${code ? ` (error ${code})` : ''}.`,
+    },
+  },
+
+  messagingSettings: {
+    title: 'Messaging',
+    manage: 'Messaging settings',
+    description: 'Choose which WhatsApp messages GymDesk prepares and how they are sent.',
+    kindsTitle: 'Messages to prepare',
+    kindsBody: 'Only members who agreed to WhatsApp messages receive them.',
+    timingTitle: 'Reminder days',
+    timingBody: 'Reminders are prepared every day at 10:00 IST.',
+    daysBefore: 'Days before a membership ends',
+    daysBeforeHelp: 'Up to 5 numbers from 0 to 30, separated by commas. 0 is the last day.',
+    daysAfterExpiry: 'Days after a membership ended',
+    daysAfterExpiryHelp: 'Up to 5 numbers from 1 to 60.',
+    duesDays: 'Days after an invoice due date',
+    duesDaysHelp: 'Up to 5 numbers from 1 to 90.',
+    dayListInvalid: (min: number, max: number) =>
+      `Enter up to 5 whole numbers from ${min} to ${max}, separated by commas.`,
+    language: 'Language for new members',
+    languageHelp: 'Change it for any member on their profile.',
+    deliveryTitle: 'How messages are sent',
+    providers: {
+      manual: 'Staff send them from WhatsApp',
+      whatsapp_api: 'Send automatically with WhatsApp Cloud API',
+    } as const,
+    providerHelp: {
+      manual: 'Messages wait in Messages. Staff tap Send and WhatsApp opens with the text ready.',
+      whatsapp_api:
+        'Reminders go out at 10:00 IST; receipts and welcome messages right away. Failures stay in Messages.',
+    } as const,
+    apiNeedsConnection: 'Connect WhatsApp Cloud API first to send automatically.',
+    save: 'Save settings',
+    saved: 'Messaging settings saved.',
+    connectionTitle: 'WhatsApp Cloud API',
+    connectionBody:
+      'Send from your own WhatsApp Business number. Meta bills your business for each conversation.',
+    connected: 'Connected',
+    notConnected: 'Not connected',
+    phoneNumberId: 'Phone number ID',
+    phoneNumberIdHelp: 'In Meta for Developers, open your app, then WhatsApp → API Setup.',
+    accessToken: 'Access token',
+    phoneNumberIdInvalid: 'A phone number ID is 5 to 30 digits.',
+    accessTokenInvalid: 'Paste the whole access token, without spaces.',
+    accessTokenHelp:
+      'Use a permanent System User token with the whatsapp_business_messaging permission. It is encrypted and never shown again.',
+    connect: 'Connect WhatsApp',
+    replace: 'Replace token',
+    keysTitle: 'Connect WhatsApp Cloud API',
+    keysHelp: 'GymDesk checks the number with WhatsApp before saving anything.',
+    verify: 'Verify and save',
+    verifying: 'Checking with WhatsApp…',
+    verified: 'WhatsApp connected.',
+    invalidCredentials: 'WhatsApp did not accept this token.',
+    numberNotFound: 'This token cannot use a WhatsApp number with that ID.',
+    displayPhone: 'Number',
+    verifiedName: 'Business name',
+    checked: 'Checked',
+    disconnect: 'Disconnect',
+    disconnectBody:
+      'Automatic sending stops, and messages waiting for WhatsApp move back to staff sending.',
+    disconnected: 'WhatsApp disconnected.',
+    metaTitle: 'Templates to create in WhatsApp Manager',
+    metaBody:
+      'WhatsApp only delivers business-started messages that use approved templates. Create each template below with this exact name and text, in English (en) and Hindi (hi). Text you edit in GymDesk applies to messages staff send by hand.',
+    metaName: 'Name',
+    metaCategory: 'Category',
+    metaCategories: { utility: 'Utility', marketing: 'Marketing' } as const,
+    metaCopy: 'Copy text',
+    metaCopied: 'Template text copied.',
+    templatesLink: 'Edit message text',
+  },
+
+  messageTemplates: {
+    title: 'Message text',
+    description: 'Edit what members receive. Words in braces are filled in for each member.',
+    back: 'Messaging settings',
+    languageLabel: 'Message language',
+    variablesLabel: 'Fills in',
+    variables: {
+      name: 'first name',
+      gym: 'gym name',
+      plan: 'plan',
+      date: 'date',
+      days: 'number of days',
+      amount: 'amount',
+      invoice: 'invoice number',
+      balance: 'balance due',
+      link: 'link',
+      code: 'member code',
+    } as const,
+    bodyLabel: (kind: string, language: string) => `${kind} message in ${language}`,
+    preview: 'Preview',
+    save: 'Save text',
+    saved: 'Message text saved.',
+    reset: 'Use default text',
+    resetBody: 'Replace your text with the GymDesk default for this language.',
+    resetDone: 'Default text restored.',
+    edited: 'Edited',
+    unknownVariable: (names: string) =>
+      `Remove ${names}. Only the words listed below are filled in.`,
+    sample: {
+      name: 'Ravi',
+      plan: 'Monthly',
+      date: '2026-03-12',
+      days: '3',
+      amount: '₹1,500',
+      invoice: 'GYM/25-26/0042',
+      balance: '₹0',
+      link: 'https://gymdesk.app/p/…',
+      code: 'M-0042',
+    },
+    apiNote:
+      'With WhatsApp Cloud API on, automatic messages use the approved template text in WhatsApp Manager.',
+  },
   more: {
     title: 'More',
     account: 'Account',
@@ -1164,6 +1411,12 @@ export const copy = {
       kiosk_device_limit: 'Up to 10 devices can be in kiosk mode. Turn one off first.',
       kiosk_device_not_found: 'We could not find that kiosk device.',
       invalid_pin_format: 'The PIN is 4 to 6 digits.',
+      messaging_consent_missing: 'This member has not agreed to WhatsApp messages.',
+      message_not_found: 'We could not find that message.',
+      message_not_pending: 'This message has already been sent.',
+      message_sending: 'WhatsApp is sending this message right now. Check again in a minute.',
+      message_kind_disabled: 'This kind of message is turned off in messaging settings.',
+      whatsapp_not_configured: 'Connect WhatsApp Cloud API first.',
     } as Record<string, string>,
   },
 } as const;

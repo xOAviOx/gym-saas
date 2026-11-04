@@ -22,6 +22,13 @@ export default async function MorePage() {
     <>
       <PageHeader title={copy.more.title} />
       <div className="grid gap-4">
+        <Link
+          href="/messages"
+          className="bg-card hover:shadow-lift focus-visible:ring-ring/20 animate-enter flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium transition-shadow duration-200 outline-none focus-visible:ring-3"
+        >
+          {copy.messages.manage}
+          <span aria-hidden="true">→</span>
+        </Link>
         {can.managePlans(ctx.role) ? (
           <Link
             href="/settings/plans"
@@ -46,6 +53,15 @@ export default async function MorePage() {
             className="bg-card hover:shadow-lift focus-visible:ring-ring/20 animate-enter flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium transition-shadow duration-200 outline-none [--index:2] focus-visible:ring-3"
           >
             {copy.attendanceSettings.title}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
+        {can.manageSettings(ctx.role) ? (
+          <Link
+            href="/settings/messaging"
+            className="bg-card hover:shadow-lift focus-visible:ring-ring/20 animate-enter flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium transition-shadow duration-200 outline-none [--index:2] focus-visible:ring-3"
+          >
+            {copy.messagingSettings.manage}
             <span aria-hidden="true">→</span>
           </Link>
         ) : null}

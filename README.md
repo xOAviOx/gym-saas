@@ -36,8 +36,8 @@ Full walkthrough, including how to generate the secrets and what to do after cha
 | `pnpm build`     | Production build                                                    |
 | `pnpm lint`      | ESLint                                                              |
 | `pnpm typecheck` | `tsc --noEmit`                                                      |
-| `pnpm test`      | Unit tests: members, billing, pay links, Cashfree, QR and kiosk     |
-| `pnpm test:rls`  | Tenant isolation, roles, atomic writes, billing and check-in rules  |
+| `pnpm test`      | Unit tests: members, billing, pay links, Cashfree, QR, messaging    |
+| `pnpm test:rls`  | Tenant isolation, roles, atomic writes, billing, check-in, messages |
 | `pnpm test:e2e`  | Playwright smoke flows (arrives in M6)                              |
 | `pnpm db:start`  | Start or resume the local Supabase stack                            |
 | `pnpm db:reset`  | Drop and recreate the local database from migrations + seed         |
@@ -53,7 +53,7 @@ components/ui        shadcn/ui primitives
 components/<feature> feature UI
 features/<feature>   actions.ts (Server Actions), queries.ts, schema.ts (zod)
 lib/                 copy.ts (all user-facing text), money, gst, upi, dates, phone, errors, env, payments, pdf, supabase clients, auth
-supabase/migrations  schema, functions, RLS, dashboard, members, audited writes and billing
+supabase/migrations  schema, functions, RLS, dashboard, members, audited writes, billing, attendance and messaging
 tests/unit           Vitest unit tests
 tests/rls            Vitest isolation tests (need local Supabase)
 docs/                setup and architecture notes
@@ -71,7 +71,7 @@ See `.env.example`. Every variable is validated at boot (`lib/env.ts`); the app 
 | M1        | Plans, members CRUD, memberships, member detail, Excel import                         | Done       |
 | M2        | Invoices, GST, numbering, payments, direct UPI, claims, Cashfree, PDF receipts, Dues  | Validating |
 | M3        | Attendance, QR, kiosk                                                                 | Validating |
-| M4        | Reminders, WhatsApp providers, templates                                              |            |
+| M4        | Reminders, WhatsApp providers, templates                                              | Validating |
 | M5        | Today dashboard, Reports, Expenses, CSV                                               |            |
 | M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        |            |
 
@@ -86,3 +86,7 @@ See [docs/m2-testing.md](docs/m2-testing.md) for setup, validation results, the 
 M3 adds the Attendance screen (desk search, camera QR scanning, hourly and 7-day charts, a day-by-day list), signed member check-in QR codes with a shareable card page, a PIN-protected kiosk mode for a front-desk tablet, and attendance settings (block expired members, kiosk PIN, paired devices). It also moves the whole app to the minimalist design system: warm monochrome palette, Geist and Instrument Serif, Phosphor icons and flat 1px borders.
 
 See [docs/m3-testing.md](docs/m3-testing.md) for setup, validation results and the acceptance checklist.
+
+M4 adds the Messages screen (a queue to send and a history), WhatsApp messages for consenting members (membership expiring and expired, dues overdue with a pay link, payment receipts, welcome with the check-in card, birthday wishes) in English or Hindi, editable message text per gym, messaging settings (which messages, reminder days, default language, how messages are sent), and the daily job at `/api/cron/daily` that runs at 10:00 IST. Staff send messages from WhatsApp with one tap, or the gym connects the WhatsApp Cloud API with an encrypted token and approved templates, and messages go out automatically with failures left in the queue.
+
+See [docs/m4-testing.md](docs/m4-testing.md) for setup, the WhatsApp Cloud API setup, validation results and the acceptance checklist.
