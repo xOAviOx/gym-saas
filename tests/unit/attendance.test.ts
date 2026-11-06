@@ -18,11 +18,19 @@ import {
   extractQrToken,
   verifyMemberQrToken,
 } from '@/lib/attendance/qr-token';
+import { qrPngDataUrl } from '@/lib/qr';
 
 const SECRET = 'test-portal-secret-with-enough-length';
 const MEMBER = '3f2a9c1e-5b7d-4e8f-9a0b-1c2d3e4f5a6b';
 
 describe('member QR tokens', () => {
+  it('generates a real PNG for the QR download', async () => {
+    const url = await qrPngDataUrl(createMemberQrToken(MEMBER, 1, SECRET));
+    expect(url.startsWith('data:image/png;base64,')).toBe(true);
+    const bytes = Buffer.from(url.split(',')[1]!, 'base64');
+    expect(bytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    expect(bytes.readUInt32BE(16)).toBe(1024);
+  });
   it('round-trips the member id and version', () => {
     const token = createMemberQrToken(MEMBER, 3, SECRET);
     expect(token).toMatch(/^GDM1\.[A-Za-z0-9_-]{27}\.[A-Za-z0-9_-]{22}$/);

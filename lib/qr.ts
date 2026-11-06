@@ -11,6 +11,16 @@ export async function qrDataUrl(text: string): Promise<string> {
   return `data:image/svg+xml;base64,${Buffer.from(svg, 'utf8').toString('base64')}`;
 }
 
+/** Downloadable QR code with real PNG bytes, at a size that prints cleanly. */
+export async function qrPngDataUrl(text: string): Promise<string> {
+  return QRCode.toDataURL(text, {
+    errorCorrectionLevel: 'M',
+    margin: 2,
+    width: 1024,
+    color: { dark: '#111111ff', light: '#ffffffff' },
+  });
+}
+
 /** Module grid for drawing the same QR code into a PDF. */
 export function qrModules(text: string): {
   size: number;

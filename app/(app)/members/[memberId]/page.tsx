@@ -157,6 +157,7 @@ export default async function MemberPage({
             phone={member.phone}
             consentMessaging={member.consent_messaging}
             qrSrc={qrSrc}
+            qrDownloadUrl={`/members/${member.id}/qr.png`}
             cardUrl={qr.cardUrl}
           />
         ) : null}

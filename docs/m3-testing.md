@@ -36,6 +36,8 @@ The database tests add: the PIN hash is unreadable to every team member and dire
 
 Validation used the local Supabase stack and the production Next.js build.
 
+6 November follow-up: the member QR download had an SVG payload with a `.png` filename, which macOS Preview rejected. The authenticated download route now serves a 1024 px PNG with `image/png` and an attachment filename. A unit test checks its PNG signature and dimensions. A fresh browser download completed, and macOS `sips` recognized the saved file as PNG; a signed-out request redirects to sign-in. The on-screen QR remains SVG.
+
 | Check                                       | Result                                                                                                                                                      |
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed                                                                                                                                                      |

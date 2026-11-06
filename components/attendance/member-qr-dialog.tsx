@@ -23,6 +23,7 @@ export function MemberQrDialog({
   phone,
   consentMessaging,
   qrSrc,
+  qrDownloadUrl,
   cardUrl,
 }: {
   memberId: string;
@@ -32,6 +33,7 @@ export function MemberQrDialog({
   phone: string;
   consentMessaging: boolean;
   qrSrc: string;
+  qrDownloadUrl: string;
   cardUrl: string;
 }) {
   const router = useRouter();
@@ -115,7 +117,7 @@ export function MemberQrDialog({
         <div className="grid gap-3">
           <div className="grid grid-cols-2 gap-3">
             <Button asChild variant="outline">
-              <a href={qrSrc} download={`${code}-check-in-qr.png`}>
+              <a href={qrDownloadUrl} download={`${code}-check-in-qr.png`}>
                 <DownloadIcon aria-hidden="true" />
                 {copy.memberQr.download}
               </a>
