@@ -22,6 +22,24 @@ export default async function MorePage() {
     <>
       <PageHeader title={copy.more.title} />
       <div className="grid gap-4">
+        {can.viewReports(ctx.role) ? (
+          <Link
+            href="/reports"
+            className="bg-card hover:shadow-lift focus-visible:ring-ring/20 flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium transition-shadow outline-none focus-visible:ring-3"
+          >
+            {copy.reports.title}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
+        {can.viewExpenses(ctx.role) ? (
+          <Link
+            href="/expenses"
+            className="bg-card hover:shadow-lift focus-visible:ring-ring/20 flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium transition-shadow outline-none focus-visible:ring-3"
+          >
+            {copy.expenses.title}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
         <Link
           href="/messages"
           className="bg-card hover:shadow-lift focus-visible:ring-ring/20 animate-enter flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium transition-shadow duration-200 outline-none focus-visible:ring-3"

@@ -1017,6 +1017,9 @@ isOneToOne: false
 "dashboard_stats":
 { Args: { "p_org": string }; Returns: Json
                            },
+"delete_expense":
+{ Args: { "p_id": string,"p_org": string }; Returns: undefined
+                           },
 "effective_membership_end":
 { Args: { "m": Omit<Database["public"]['Tables']["memberships"]['Row'], Database["public"]['Tables']["memberships"]['ComputedFields']>,"p_today": string }; Returns: string
                            },
@@ -1321,6 +1324,9 @@ isOneToOne: false
 "remove_whatsapp_credentials":
 { Args: { "p_org": string }; Returns: undefined
                            },
+"report_overview":
+{ Args: { "p_end": string,"p_org": string,"p_start": string }; Returns: Json
+                           },
 "reset_member_qr":
 { Args: { "p_member_id": string }; Returns: number
                            },
@@ -1397,6 +1403,9 @@ isOneToOne: false
                            },
 "save_cashfree_credentials":
 { Args: { "p_app_id": string,"p_environment": string,"p_org": string,"p_secret_enc": string }; Returns: undefined
+                           },
+"save_expense":
+{ Args: { "p_amount": number,"p_category": Database["public"]['Enums']["expense_category"],"p_date": string,"p_id": string,"p_notes": string,"p_org": string,"p_vendor": string }; Returns: string
                            },
 "save_gateway_link":
 { Args: { "p_amount": number,"p_expires_at": string,"p_invoice_id": string,"p_link_id": string,"p_org": string,"p_request_id": string,"p_url": string }; Returns: {

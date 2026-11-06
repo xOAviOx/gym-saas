@@ -1,6 +1,6 @@
 # Progress
 
-State of GymDesk as of 4 November 2026. Start here to see what is done, what is in flight, and what is known to be unfinished. Pair with `FUTURE_PLAN.md` for what comes next.
+State of GymDesk as of 6 November 2026. Start here to see what is done, what is in flight, and what is known to be unfinished. Pair with `FUTURE_PLAN.md` for what comes next.
 
 ## Milestone status
 
@@ -11,12 +11,13 @@ State of GymDesk as of 4 November 2026. Start here to see what is done, what is 
 | M2        | Invoices, GST, numbering, payments, direct UPI, claims, Cashfree, PDF receipts, Dues  | **Validating** |
 | M3        | Attendance, QR, kiosk                                                                 | **Validating** |
 | M4        | Reminders, WhatsApp providers, templates                                              | **Validating** |
-| M5        | Today dashboard, Reports, Expenses, CSV                                               | Not started    |
+| M5        | Today dashboard, Reports, Expenses, CSV                                               | **Validating** |
 | M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        | Not started    |
 
 ## Git history
 
 ```
+M5: dashboard, reports, expenses and CSV exports
 M4: WhatsApp reminders, receipts, message templates and daily job
 c7d2f3d M3: attendance, QR check-in, kiosk and minimalist restyle
 705065d Add agent handoff docs: ABOUT_PROJECT, PROGRESS, FUTURE_PLAN
@@ -26,6 +27,10 @@ e71d06d M0: GymDesk foundation: Next.js 16 + Supabase schema/RLS, auth, onboardi
 ```
 
 Branch: `main`. One commit per milestone, in the `M<n>: <summary>` style.
+
+## M5 status
+
+M5 adds camera capture or file selection during member creation; the photo is previewed and saved in the existing private bucket. The Today dashboard links all KPIs and shows active and total members. Owner/manager reports cover collections by method, plan and staff, attendance trends, overdue members, expenses and net collections for an IST month or financial year. Expenses use audited SQL functions, with direct writes closed. Member, invoice and payment CSV exports use authenticated, gym-scoped reads and Indian date/money formats. See `docs/m5-testing.md` for validation and remaining device checks.
 
 ## M4 status
 

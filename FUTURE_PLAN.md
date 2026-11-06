@@ -21,12 +21,11 @@ Still open:
 - Delivery and read receipts need a Meta webhook (`delivered` status exists but nothing sets it yet). Consider it in M6 with the other public endpoints.
 - Members who reply STOP are not detected automatically; staff turn off consent on the profile.
 
-## Immediate next up: M5 — Today dashboard, Reports, Expenses, CSV
+## M5 — Today dashboard, Reports, Expenses, CSV (validating)
 
-- **Today dashboard**: replace the M0 placeholder with check-ins today, dues collected today, expiring memberships, and other owner KPIs. The `20261030000004_dashboard.sql` migration already exists as a foundation.
-- **Reports**: revenue (by method, by plan, by staff), attendance trends, overdue members. IST month/financial-year boundaries.
-- **Expenses**: owner/manager-only table (RLS already anticipates this on expenses); simple CRUD with audit rows; feeds net-revenue reports.
-- **CSV export** of members, invoices and payments, consistent with the Indian money/date formats.
+Done: linked Today KPIs; month and financial-year reports for net collections, payment methods, plans, staff, attendance and overdue members; audited owner/manager expense CRUD; private CSV exports for members, invoices and payments; camera/file photo selection during member creation. See `docs/m5-testing.md`.
+
+Still open: mobile and accessibility walkthroughs, a real camera capture on phone/tablet, and larger-data export checks.
 
 ## M6 — Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs
 
@@ -48,6 +47,7 @@ Still open:
 - [ ] Resolve or re-check the dev-only `minimatch` moderate advisory (GHSA-g3hv-75wg-m249) — safe to carry while it stays dev-only.
 - [ ] M3 device checks: camera scanning on a real phone and tablet, kiosk on the front-desk tablet, axe scans (checklist in `docs/m3-testing.md`).
 - [ ] M4 checks: browser walkthrough, live WhatsApp Cloud API send with approved templates, Vercel Cron on a deployment, axe scans (checklist in `docs/m4-testing.md`).
+- [ ] M5 checks: mobile and accessibility walkthroughs, real device photo capture, and larger-data exports (checklist in `docs/m5-testing.md`).
 
 ## Working rules for any agent picking this up
 

@@ -2087,3 +2087,77 @@ describe('anonymous access', () => {
     expect(error).not.toBeNull();
   });
 });
+
+describe('M5 expenses and reports', () => {
+  let staff: { client: Client; userId: string };
+  beforeAll(async () => {
+    staff = await signedInClient(`rls-m5-${run}@example.test`, 'Passw0rd!rls');
+    const { error } = await admin.from('team_members').insert({
+      org_id: a.orgId,
+      user_id: staff.userId,
+      role: 'staff',
+    });
+    expect(error).toBeNull();
+  });
+  afterAll(async () => {
+    if (staff) expect((await admin.auth.admin.deleteUser(staff.userId)).error).toBeNull();
+  });
+  it('restricts writes, records expense audits, and includes expenses in net reporting', async () => {
+    const today = todayIST();
+    const args = {
+      p_org: a.orgId,
+      p_id: null as unknown as string,
+      p_category: 'rent' as const,
+      p_amount: 250,
+      p_date: today,
+      p_vendor: 'M5 Vendor',
+      p_notes: 'Test cost',
+    };
+    const direct = await a.client.from('expenses').insert({
+      org_id: a.orgId,
+      category: 'rent',
+      amount: 1,
+      expense_date: today,
+    });
+    expect(direct.error).not.toBeNull();
+    expect((await staff.client.rpc('save_expense', args)).error?.code).toBe('42501');
+    expect((await a.client.rpc('save_expense', { ...args, p_org: b.orgId })).error?.code).toBe(
+      '42501',
+    );
+    const created = await a.client.rpc('save_expense', args);
+    expect(created.error).toBeNull();
+    const id = created.data!;
+    expect((await staff.client.from('expenses').select('id').eq('id', id)).data).toEqual([]);
+    expect((await a.client.from('expenses').select('id').eq('id', id)).data).toHaveLength(1);
+    const report = await a.client.rpc('report_overview', {
+      p_org: a.orgId,
+      p_start: today,
+      p_end: today,
+    });
+    expect(report.error).toBeNull();
+    const body = report.data as { revenue: number; expenses: number; net: number };
+    expect(body.expenses).toBeGreaterThanOrEqual(250);
+    expect(body.net).toBeCloseTo(body.revenue - body.expenses);
+    expect(
+      (await staff.client.rpc('report_overview', { p_org: a.orgId, p_start: today, p_end: today }))
+        .error?.code,
+    ).toBe('42501');
+    expect(
+      (await a.client.rpc('report_overview', { p_org: b.orgId, p_start: today, p_end: today }))
+        .error?.code,
+    ).toBe('42501');
+    const updated = await a.client.rpc('save_expense', { ...args, p_id: id, p_amount: 300 });
+    expect(updated.error).toBeNull();
+    expect((await a.client.rpc('delete_expense', { p_org: a.orgId, p_id: id })).error).toBeNull();
+    const audit = await admin
+      .from('audit_logs')
+      .select('action')
+      .eq('entity_id', id)
+      .order('created_at');
+    expect(audit.data?.map((row) => row.action)).toEqual([
+      'expense.created',
+      'expense.updated',
+      'expense.deleted',
+    ]);
+  });
+});

@@ -72,7 +72,7 @@ See `.env.example`. Every variable is validated at boot (`lib/env.ts`); the app 
 | M2        | Invoices, GST, numbering, payments, direct UPI, claims, Cashfree, PDF receipts, Dues  | Validating |
 | M3        | Attendance, QR, kiosk                                                                 | Validating |
 | M4        | Reminders, WhatsApp providers, templates                                              | Validating |
-| M5        | Today dashboard, Reports, Expenses, CSV                                               |            |
+| M5        | Today dashboard, Reports, Expenses, CSV                                               | Validating |
 | M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        |            |
 
 M1 adds search-scoped membership counts and dues, contextual member actions, two-step member creation, private photos, notes, recent activity, renewal/freeze controls, 30-day restore, plan management, and guided spreadsheet import with server-validated duplicate detection. Memberships create unpaid invoices; collection and payment reconciliation arrive in M2.
@@ -90,3 +90,7 @@ See [docs/m3-testing.md](docs/m3-testing.md) for setup, validation results and t
 M4 adds the Messages screen (a queue to send and a history), WhatsApp messages for consenting members (membership expiring and expired, dues overdue with a pay link, payment receipts, welcome with the check-in card, birthday wishes) in English or Hindi, editable message text per gym, messaging settings (which messages, reminder days, default language, how messages are sent), and the daily job at `/api/cron/daily` that runs at 10:00 IST. Staff send messages from WhatsApp with one tap, or the gym connects the WhatsApp Cloud API with an encrypted token and approved templates, and messages go out automatically with failures left in the queue.
 
 See [docs/m4-testing.md](docs/m4-testing.md) for setup, the WhatsApp Cloud API setup, validation results and the acceptance checklist.
+
+M5 adds member photo capture during creation, linked Today KPIs, reports for collections, expenses, attendance and overdue members, audited expense tracking, and private CSV exports of members, invoices and payments. Reports support IST months and Indian financial years.
+
+See [docs/m5-testing.md](docs/m5-testing.md) for validation and the remaining device checklist.
