@@ -39,7 +39,7 @@ export async function signUpWithPassword(
       password: data.password,
       options: {
         data: { full_name: data.fullName },
-        emailRedirectTo: `${publicEnv.appUrl}/auth/confirm?next=/onboarding`,
+        emailRedirectTo: `${publicEnv.appUrl}/auth/confirm?next=${encodeURIComponent(safeNextPath(data.next, '/onboarding'))}`,
       },
     });
     if (error) {
@@ -55,7 +55,7 @@ export async function signUpWithPassword(
     if (result.user && result.user.identities?.length === 0) {
       throw new ActionError(copy.auth.emailTaken, 'conflict');
     }
-    return { next: '/onboarding', needsConfirmation: !result.session };
+    return { next: safeNextPath(data.next, '/onboarding'), needsConfirmation: !result.session };
   });
 }
 

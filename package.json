@@ -22,6 +22,7 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --local --schema public > lib/supabase/database.types.ts",
+    "seed:demo": "node --env-file=.env.local scripts/seed-demo.mjs",
     "db:push": "supabase db push",
     "test:rls": "vitest run --project rls"
   },
@@ -51,6 +52,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.6",
     "@types/qrcode": "^1.5.6",

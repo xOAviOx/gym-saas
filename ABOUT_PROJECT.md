@@ -14,7 +14,7 @@ This file is the entry point for AI agents (or humans) picking up the codebase. 
 | Writes       | All multi-step writes are `security definer` SQL functions called over RPC              |
 | Validation   | zod schemas shared between client and server (react-hook-form + `@hookform/resolvers`)  |
 | PDF          | `pdf-lib`, generated on the server (`lib/pdf/`)                                         |
-| Tests        | Vitest (unit + RLS isolation), Playwright (smoke flows, arrives in M6)                  |
+| Tests        | Vitest (unit + RLS isolation), Playwright smoke flows                                   |
 | CI           | GitHub Actions (`.github/workflows/ci.yml`)                                             |
 | Hosting plan | Vercel (Mumbai region) with Vercel Cron for nightly maintenance and 10:00 IST reminders |
 

@@ -56,6 +56,33 @@ export default async function MorePage() {
             <span aria-hidden="true">→</span>
           </Link>
         ) : null}
+        {can.viewAuditLog(ctx.role) ? (
+          <Link
+            href="/settings/audit"
+            className="bg-card hover:shadow-lift flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium"
+          >
+            {copy.audit.title}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
+        {can.manageSettings(ctx.role) ? (
+          <Link
+            href="/settings/team"
+            className="bg-card hover:shadow-lift flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium"
+          >
+            {copy.team.title}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
+        {can.manageSettings(ctx.role) ? (
+          <Link
+            href="/settings/gym"
+            className="bg-card hover:shadow-lift flex min-h-14 items-center justify-between rounded-xl border px-5 text-sm font-medium"
+          >
+            {copy.gymSettings.title}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
         {can.manageSettings(ctx.role) ? (
           <Link
             href="/settings/payments"

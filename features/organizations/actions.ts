@@ -2,10 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { authorizeUser } from '@/lib/auth/session';
+import { authorize, authorizeUser } from '@/lib/auth/session';
+import { PRIVILEGED_ROLES } from '@/lib/auth/roles';
 import { parseInput, runAction, unwrap, type ActionResult } from '@/lib/errors';
 
 import { createOrganizationSchema } from './schema';
+import { gymSettingsSchema } from './settings';
 
 export async function createOrganization(input: unknown): Promise<ActionResult<{ orgId: string }>> {
   return runAction(async () => {
@@ -29,5 +31,31 @@ export async function createOrganization(input: unknown): Promise<ActionResult<{
 
     revalidatePath('/', 'layout');
     return { orgId: org.id };
+  });
+}
+
+export async function saveGymSettings(input: unknown): Promise<ActionResult<null>> {
+  return runAction(async () => {
+    const data = parseInput(gymSettingsSchema, input);
+    const { supabase, ctx } = await authorize(PRIVILEGED_ROLES);
+    unwrap(
+      await supabase
+        .from('organizations')
+        .update({
+          name: data.name,
+          city: data.city || null,
+          state: data.state || null,
+          address_line: data.addressLine || null,
+          phone: data.phone,
+          email: data.email || null,
+          invoice_prefix: data.invoicePrefix,
+          gst_enabled: data.gstEnabled,
+          gstin: data.gstEnabled ? data.gstin : null,
+          gst_rate: data.gstRate,
+        })
+        .eq('id', ctx.org.id),
+    );
+    revalidatePath('/', 'layout');
+    return null;
   });
 }

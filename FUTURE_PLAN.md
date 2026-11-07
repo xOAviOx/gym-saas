@@ -27,17 +27,11 @@ Done: linked Today KPIs; month and financial-year reports for net collections, p
 
 Still open: mobile and accessibility walkthroughs, a real camera capture on phone/tablet, and larger-data export checks.
 
-## M6 — Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs
+## M6 — Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs (implemented, validating)
 
-- **Member portal**: read-only view behind the existing signed-link/token pattern (`/p/` routes, `PORTAL_TOKEN_SECRET`).
-- **Settings**: gym profile, GSTIN/rate, invoice prefix, team management.
-- **Invitations**: team invites via HMAC-signed links (anticipated service-role path for invite acceptance); role management on `team_members`.
-- **Audit viewer**: staff-facing UI over `audit_logs` (read-only, owner/manager scoped).
-- **Member export/delete**: 30-day soft-delete restore already exists from M1; add GDPR-style export and permanent deletion flows.
-- **PWA**: installable, offline-tolerant shell; the kiosk mode from M3 is the main PWA surface.
-- **Seed data**: a realistic seed script for local development and demos.
-- **Playwright suite**: the smoke flows promised by `pnpm test:e2e` (currently unimplemented).
-- **Docs**: final pass on README and docs.
+Done: revocable 30-day member portal links and read-only page; gym details, GSTIN/rate and invoice prefix settings; seven-day email-bound team invites and role/active controls; owner audit viewer; owner-only paged member JSON export and guarded personal-data erasure; installable PWA shell with offline fallback; opt-in local demo seed; Playwright smoke suite. See `docs/m6-testing.md`.
+
+Still open: public HTTPS deployment and member links, real-device PWA installation, larger export and full-record erasure checks. Valid portal and invite flows passed in isolated local Playwright tests. The offline shell does not record check-ins while disconnected.
 
 ## Carried-over validation debt
 

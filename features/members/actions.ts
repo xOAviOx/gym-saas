@@ -4,12 +4,13 @@ import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 
 import { queueWelcome, type QueuedMessage } from '@/features/messaging/hooks';
-import { PRIVILEGED_ROLES } from '@/lib/auth/roles';
+import { OWNER_ONLY, PRIVILEGED_ROLES } from '@/lib/auth/roles';
 import { authorize } from '@/lib/auth/session';
 import { copy } from '@/lib/copy';
 import { todayIST } from '@/lib/dates';
 import { ActionError, parseInput, runAction, unwrap, type ActionResult } from '@/lib/errors';
 import { fromPaise, toPaise } from '@/lib/money';
+import type { Tables } from '@/lib/supabase/types';
 
 import { memberDatabaseData } from './data';
 import { createMemberSchema, memberIdSchema, notesSchema, updateMemberSchema } from './schema';
@@ -188,6 +189,30 @@ export async function saveMemberPhoto(formData: FormData): Promise<ActionResult<
     if (member.photo_url?.startsWith(`${ctx.org.id}/members/${memberId}/`)) {
       await supabase.storage.from('uploads').remove([member.photo_url]);
     }
+    revalidateMember(memberId);
+    return null;
+  });
+}
+
+export async function permanentlyDeleteMember(input: unknown): Promise<ActionResult<null>> {
+  return runAction(async () => {
+    const { memberId } = parseInput(memberIdSchema, input);
+    const { supabase, ctx } = await authorize(OWNER_ONLY);
+    const response = await supabase
+      .from('members')
+      .select('*')
+      .eq('org_id', ctx.org.id)
+      .eq('id', memberId)
+      .single();
+    if (response.error) throw response.error;
+    const member = response.data as Tables<'members'> | null;
+    if (!member) throw new ActionError(copy.errors.notFound, 'not_found');
+    if (!member.deleted_at) throw new ActionError(copy.members.purgeRequiresDelete, 'validation');
+    if (member.photo_url?.startsWith(`${ctx.org.id}/members/${memberId}/`)) {
+      const { error } = await supabase.storage.from('uploads').remove([member.photo_url]);
+      if (error) throw error;
+    }
+    unwrap(await supabase.rpc('purge_member_data', { p_member_id: memberId }));
     revalidateMember(memberId);
     return null;
   });

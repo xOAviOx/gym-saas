@@ -12,7 +12,7 @@ State of GymDesk as of 6 November 2026. Start here to see what is done, what is 
 | M3        | Attendance, QR, kiosk                                                                 | **Validating** |
 | M4        | Reminders, WhatsApp providers, templates                                              | **Validating** |
 | M5        | Today dashboard, Reports, Expenses, CSV                                               | **Validating** |
-| M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        | Not started    |
+| M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        | **Validating** |
 
 ## Git history
 
@@ -27,6 +27,10 @@ e71d06d M0: GymDesk foundation: Next.js 16 + Supabase schema/RLS, auth, onboardi
 ```
 
 Branch: `main`. One commit per milestone, in the `M<n>: <summary>` style.
+
+## M6 status
+
+M6 is implemented locally and validating. Member portal links are separate from check-in codes, expire after 30 days and can be revoked. Gym settings, team invites, owner audit history, member export/erasure, PWA offline shell, opt-in local seed and Playwright smoke tests are available. Direct invitation and portal-token writes are closed by migration `20261106000017_m6_access.sql`; issue/revoke functions are role-checked and audited. See `docs/m6-testing.md` for validation and remaining real-device/public-URL checks.
 
 ## M5 status
 

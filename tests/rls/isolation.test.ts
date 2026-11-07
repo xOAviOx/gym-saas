@@ -2161,3 +2161,80 @@ describe('M5 expenses and reports', () => {
     ]);
   });
 });
+
+describe('M6 access links and permanent erasure', () => {
+  it('issues and revokes portal links only through audited gym-scoped RPCs', async () => {
+    const hash = 'a'.repeat(64);
+    const direct = await a.client.from('portal_tokens').insert({
+      org_id: a.orgId,
+      member_id: a.memberId,
+      token_hash: hash,
+      expires_at: new Date(Date.now() + 86400_000).toISOString(),
+    });
+    expect(direct.error?.code).toBe('42501');
+    expect(
+      (
+        await a.client.rpc('issue_portal_token', {
+          p_org: b.orgId,
+          p_member_id: b.memberId,
+          p_token_hash: hash,
+        })
+      ).error?.code,
+    ).toBe('42501');
+    const created = await a.client.rpc('issue_portal_token', {
+      p_org: a.orgId,
+      p_member_id: a.memberId,
+      p_token_hash: hash,
+    });
+    expect(created.error).toBeNull();
+    const stored = await admin
+      .from('portal_tokens')
+      .select('token_hash,revoked_at')
+      .eq('id', created.data!)
+      .single();
+    expect(stored.data?.token_hash).toBe(hash);
+    expect(stored.data?.revoked_at).toBeNull();
+    const revoked = await a.client.rpc('revoke_member_portal_tokens', {
+      p_org: a.orgId,
+      p_member_id: a.memberId,
+    });
+    expect(revoked.data).toBe(1);
+    expect(
+      (await admin.from('portal_tokens').select('revoked_at').eq('id', created.data!).single()).data
+        ?.revoked_at,
+    ).not.toBeNull();
+  });
+
+  it('prevents direct invitation writes and erasure of live members', async () => {
+    const hash = 'b'.repeat(64);
+    const direct = await a.client.from('invitations').insert({
+      org_id: a.orgId,
+      email: 'm6@example.test',
+      role: 'staff',
+      token_hash: hash,
+      expires_at: new Date(Date.now() + 86400_000).toISOString(),
+    });
+    expect(direct.error?.code).toBe('42501');
+    const invite = await a.client.rpc('issue_invitation', {
+      p_org: a.orgId,
+      p_email: 'm6@example.test',
+      p_role: 'staff',
+      p_token_hash: hash,
+    });
+    expect(invite.error).toBeNull();
+    expect(
+      (await a.client.rpc('purge_member_data', { p_member_id: a.memberId })).error,
+    ).not.toBeNull();
+    expect(
+      (await a.client.rpc('soft_delete_member', { p_member_id: a.memberId })).error,
+    ).toBeNull();
+    expect((await a.client.rpc('purge_member_data', { p_member_id: a.memberId })).error).toBeNull();
+    const member = await admin
+      .from('members')
+      .select('full_name,phone')
+      .eq('id', a.memberId)
+      .single();
+    expect(member.data?.full_name).toBe('Deleted member');
+    expect(member.data?.phone).not.toMatch(/^\+9198/);
+  });
+});

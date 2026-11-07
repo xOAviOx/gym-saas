@@ -30,6 +30,7 @@ export const signUpSchema = z.strictObject({
     .max(80, copy.validation.tooLong(80)),
   email: emailSchema,
   password: passwordSchema,
+  next: nextPathSchema,
 });
 export type SignUpInput = z.input<typeof signUpSchema>;
 

@@ -30,20 +30,21 @@ Full walkthrough, including how to generate the secrets and what to do after cha
 
 ## Scripts
 
-| Script           | What it does                                                        |
-| ---------------- | ------------------------------------------------------------------- |
-| `pnpm dev`       | Next.js dev server                                                  |
-| `pnpm build`     | Production build                                                    |
-| `pnpm lint`      | ESLint                                                              |
-| `pnpm typecheck` | `tsc --noEmit`                                                      |
-| `pnpm test`      | Unit tests: members, billing, pay links, Cashfree, QR, messaging    |
-| `pnpm test:rls`  | Tenant isolation, roles, atomic writes, billing, check-in, messages |
-| `pnpm test:e2e`  | Playwright smoke flows (arrives in M6)                              |
-| `pnpm db:start`  | Start or resume the local Supabase stack                            |
-| `pnpm db:reset`  | Drop and recreate the local database from migrations + seed         |
-| `pnpm db:types`  | Regenerate `lib/supabase/database.types.ts` from the local database |
-| `pnpm db:push`   | Apply migrations to the linked hosted project                       |
-| `pnpm format`    | Prettier                                                            |
+| Script                      | What it does                                                        |
+| --------------------------- | ------------------------------------------------------------------- |
+| `pnpm dev`                  | Next.js dev server                                                  |
+| `pnpm build`                | Production build                                                    |
+| `pnpm lint`                 | ESLint                                                              |
+| `pnpm typecheck`            | `tsc --noEmit`                                                      |
+| `pnpm test`                 | Unit tests: members, billing, pay links, Cashfree, QR, messaging    |
+| `pnpm test:rls`             | Tenant isolation, roles, atomic writes, billing, check-in, messages |
+| `pnpm test:e2e`             | Playwright smoke flows (needs the local app and Supabase)           |
+| `pnpm seed:demo <gym-uuid>` | Opt-in local demo members and plans                                 |
+| `pnpm db:start`             | Start or resume the local Supabase stack                            |
+| `pnpm db:reset`             | Drop and recreate the local database from migrations + seed         |
+| `pnpm db:types`             | Regenerate `lib/supabase/database.types.ts` from the local database |
+| `pnpm db:push`              | Apply migrations to the linked hosted project                       |
+| `pnpm format`               | Prettier                                                            |
 
 ## Project structure
 
@@ -73,7 +74,7 @@ See `.env.example`. Every variable is validated at boot (`lib/env.ts`); the app 
 | M3        | Attendance, QR, kiosk                                                                 | Validating |
 | M4        | Reminders, WhatsApp providers, templates                                              | Validating |
 | M5        | Today dashboard, Reports, Expenses, CSV                                               | Validating |
-| M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        |            |
+| M6        | Portal, Settings, invites, audit viewer, export/delete, PWA, seed, tests, docs        | Validating |
 
 M1 adds search-scoped membership counts and dues, contextual member actions, two-step member creation, private photos, notes, recent activity, renewal/freeze controls, 30-day restore, plan management, and guided spreadsheet import with server-validated duplicate detection. Memberships create unpaid invoices; collection and payment reconciliation arrive in M2.
 
@@ -94,3 +95,5 @@ See [docs/m4-testing.md](docs/m4-testing.md) for setup, the WhatsApp Cloud API s
 M5 adds member photo capture during creation, linked Today KPIs, reports for collections, expenses, attendance and overdue members, audited expense tracking, and private CSV exports of members, invoices and payments. Reports support IST months and Indian financial years.
 
 See [docs/m5-testing.md](docs/m5-testing.md) for validation and the remaining device checklist.
+
+M6 adds a read-only member portal with revocable 30-day private links, gym settings, email-bound team invitations, owner audit history, member data export and erasure, an installable offline-tolerant shell, an opt-in local demo seed and Playwright smoke tests. Member links sent to other devices require a public HTTPS `NEXT_PUBLIC_APP_URL`; `localhost` works only on this computer. See [docs/m6-testing.md](docs/m6-testing.md).

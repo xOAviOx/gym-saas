@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { Toaster } from '@/components/ui/sonner';
+import { PwaRegistration } from '@/components/shell/pwa-registration';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { APP_NAME, copy } from '@/lib/copy';
 import { cn } from '@/lib/utils';
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <TooltipProvider delayDuration={300}>{children}</TooltipProvider>
         <Toaster />
+        <PwaRegistration />
       </body>
     </html>
   );

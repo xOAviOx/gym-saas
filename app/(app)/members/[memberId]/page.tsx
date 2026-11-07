@@ -11,6 +11,7 @@ import { EditMember } from '@/components/members/edit-member';
 import { MemberActivity } from '@/components/members/member-activity';
 import { MemberNotes } from '@/components/members/member-notes';
 import { MemberPhoto } from '@/components/members/member-photo';
+import { MemberPortalLink } from '@/components/members/member-portal-link';
 import { EnrollmentDialog, FreezeControls } from '@/components/memberships/membership-controls';
 import { ConfirmAction } from '@/components/shared/confirm-action';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -18,7 +19,7 @@ import { StatusBadge } from '@/components/shared/status-badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { memberQrFor } from '@/features/attendance/member-qr';
-import { deleteMember, restoreMember } from '@/features/members/actions';
+import { deleteMember, permanentlyDeleteMember, restoreMember } from '@/features/members/actions';
 import { buildMemberActivity } from '@/features/members/activity';
 import { membershipHint } from '@/features/members/presentation';
 import {
@@ -138,6 +139,16 @@ export default async function MemberPage({
               action={restoreMember.bind(null, { memberId: member.id })}
             />
           </div>
+          {can.purgeMemberData(ctx.role) ? (
+            <ConfirmAction
+              label={copy.members.purge}
+              description={copy.members.purgeHelp}
+              success={copy.members.purged}
+              action={permanentlyDeleteMember.bind(null, { memberId: member.id })}
+              redirectTo="/members"
+              destructive
+            />
+          ) : null}
         </section>
       ) : null}
       <div className="mb-6 flex flex-wrap gap-3">
@@ -378,6 +389,21 @@ export default async function MemberPage({
         </TabsContent>
       </Tabs>
       <MemberActivity items={recentActivity} />
+      {can.purgeMemberData(ctx.role) ? (
+        <a
+          href={`/members/${member.id}/export.json`}
+          className="text-foreground mt-4 inline-flex min-h-11 items-center text-sm underline"
+        >
+          {copy.members.exportData}
+        </a>
+      ) : null}
+      {!readOnly ? (
+        <MemberPortalLink
+          memberId={member.id}
+          phone={member.phone}
+          consentMessaging={member.consent_messaging}
+        />
+      ) : null}
       <details className="bg-card mt-6 rounded-xl border p-5">
         <summary className="min-h-11 cursor-pointer py-3 text-sm font-medium">
           {copy.members.profile}

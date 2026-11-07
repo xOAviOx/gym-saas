@@ -22,17 +22,17 @@ import { signUpWithPassword } from '@/features/auth/actions';
 import { signUpSchema, type SignUpInput } from '@/features/auth/schema';
 import { copy } from '@/lib/copy';
 
-export function SignUpForm() {
+export function SignUpForm({ next }: { next?: string }) {
   const [pending, setPending] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { fullName: '', email: '', password: '' },
+    defaultValues: { fullName: '', email: '', password: '', next },
   });
 
   async function onSubmit(values: SignUpInput) {
     setPending(true);
-    const result = await signUpWithPassword(values);
+    const result = await signUpWithPassword({ ...values, next });
     if (applyActionResult(result, form.setError)) {
       if (result.data.needsConfirmation) {
         setConfirmEmail(values.email);

@@ -6,10 +6,16 @@ import { GoogleButton } from '@/components/auth/google-button';
 import { OrDivider } from '@/components/auth/or-divider';
 import { SignUpForm } from '@/components/auth/sign-up-form';
 import { copy } from '@/lib/copy';
+import { safeNextPath } from '@/lib/supabase/proxy';
 
 export const metadata: Metadata = { title: copy.auth.signUpTitle };
 
-export default function SignUpPage() {
+export default async function SignUpPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const next = safeNextPath((await searchParams).next, '/onboarding');
   return (
     <AuthCard
       title={copy.auth.signUpTitle}
@@ -18,7 +24,7 @@ export default function SignUpPage() {
         <>
           {copy.auth.haveAccount}{' '}
           <Link
-            href="/sign-in"
+            href={`/sign-in?next=${encodeURIComponent(next)}`}
             className="text-foreground decoration-input font-medium underline underline-offset-4 hover:decoration-current"
           >
             {copy.auth.signIn}
@@ -26,9 +32,9 @@ export default function SignUpPage() {
         </>
       }
     >
-      <GoogleButton next="/onboarding" />
+      <GoogleButton next={next} />
       <OrDivider />
-      <SignUpForm />
+      <SignUpForm next={next} />
     </AuthCard>
   );
 }

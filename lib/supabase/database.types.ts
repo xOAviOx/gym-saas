@@ -1073,6 +1073,12 @@ isOneToOne: false
 "is_privileged_caller":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"issue_invitation":
+{ Args: { "p_email": string,"p_org": string,"p_role": Database["public"]['Enums']["team_role"],"p_token_hash": string }; Returns: string
+                           },
+"issue_portal_token":
+{ Args: { "p_member_id": string,"p_org": string,"p_token_hash": string }; Returns: string
+                           },
 "ist_day_start":
 { Args: { "p_date": string }; Returns: string
                            },
@@ -1394,6 +1400,9 @@ isOneToOne: false
       } },
 "revoke_kiosk_device":
 { Args: { "p_device_id": string }; Returns: undefined
+                           },
+"revoke_member_portal_tokens":
+{ Args: { "p_member_id": string,"p_org": string }; Returns: number
                            },
 "safe_uuid":
 { Args: { "p": string }; Returns: string
