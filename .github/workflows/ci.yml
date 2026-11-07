@@ -13,10 +13,14 @@ env:
   NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
   NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key-not-used-for-static-checks
   NEXT_PUBLIC_APP_URL: http://localhost:3000
+  SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key-not-used
+  PORTAL_TOKEN_SECRET: ci-placeholder-portal-token-secret-000000000000
+  SECRETS_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+  CRON_SECRET: ci-placeholder-cron-secret-000000000000000000
 
 jobs:
   checks:
-    name: Lint, typecheck, unit tests, audit
+    name: Lint, typecheck, unit tests, build, audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +33,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm format:check
+      - run: pnpm build
       - run: pnpm audit --audit-level=high
 
   database:

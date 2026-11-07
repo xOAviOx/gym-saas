@@ -1,0 +1,73 @@
+name: Production database backup
+
+on:
+  schedule:
+    # 02:00 Asia/Kolkata
+    - cron: '30 20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-database-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      BACKUP_ENCRYPTION_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_BACKUP_BUCKET: ${{ secrets.R2_BACKUP_BUCKET }}
+    steps:
+      - name: Validate backup configuration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          : "${SUPABASE_DB_URL:?Add the SUPABASE_DB_URL repository secret}"
+          : "${BACKUP_ENCRYPTION_PASSWORD:?Add the BACKUP_ENCRYPTION_PASSWORD repository secret}"
+          : "${AWS_ACCESS_KEY_ID:?Add the R2_ACCESS_KEY_ID repository secret}"
+          : "${AWS_SECRET_ACCESS_KEY:?Add the R2_SECRET_ACCESS_KEY repository secret}"
+          : "${R2_ACCOUNT_ID:?Add the R2_ACCOUNT_ID repository secret}"
+          : "${R2_BACKUP_BUCKET:?Add the R2_BACKUP_BUCKET repository secret}"
+
+      - name: Create a compressed PostgreSQL backup
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p backup
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            --env SUPABASE_DB_URL \
+            --volume "${PWD}/backup:/backup" \
+            postgres:17-alpine \
+            sh -ec 'pg_dump --dbname="$SUPABASE_DB_URL" --format=custom --compress=9 --no-owner --no-privileges --file=/backup/database.dump'
+          test -s backup/database.dump
+
+      - name: Encrypt before leaving the runner
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          openssl enc -aes-256-cbc -pbkdf2 -salt \
+            -in backup/database.dump \
+            -out backup/database.dump.enc \
+            -pass env:BACKUP_ENCRYPTION_PASSWORD
+          rm backup/database.dump
+          test -s backup/database.dump.enc
+
+      - name: Upload to the private R2 bucket and verify it
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          endpoint="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          object="database/$(date -u +'%Y/%m/gymdesk-%Y%m%dT%H%M%SZ.dump.enc')"
+          aws s3 cp backup/database.dump.enc "s3://${R2_BACKUP_BUCKET}/${object}" \
+            --endpoint-url "${endpoint}" --no-progress
+          aws s3api head-object --bucket "${R2_BACKUP_BUCKET}" --key "${object}" \
+            --endpoint-url "${endpoint}" >/dev/null

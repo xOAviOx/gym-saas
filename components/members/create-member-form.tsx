@@ -22,6 +22,7 @@ import {
 } from '@/features/members/schema';
 import type { Plan } from '@/features/plans/types';
 import { copy } from '@/lib/copy';
+import { prepareMemberPhoto } from '@/lib/images/member-photo';
 import type { MessageLanguage } from '@/lib/messaging/templates';
 
 import { MemberFields } from './member-fields';
@@ -62,7 +63,7 @@ export function CreateMemberForm({
     },
     [],
   );
-  function selectPhoto(file: File | undefined) {
+  async function selectPhoto(file: File | undefined) {
     if (!file) return;
     if (
       !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ||
@@ -71,10 +72,15 @@ export function CreateMemberForm({
       toast.error(copy.members.photoInvalid);
       return;
     }
-    setPhoto(file);
-    if (photoPreviewRef.current) URL.revokeObjectURL(photoPreviewRef.current);
-    photoPreviewRef.current = URL.createObjectURL(file);
-    setPhotoPreview(photoPreviewRef.current);
+    try {
+      const prepared = await prepareMemberPhoto(file);
+      setPhoto(prepared);
+      if (photoPreviewRef.current) URL.revokeObjectURL(photoPreviewRef.current);
+      photoPreviewRef.current = URL.createObjectURL(prepared);
+      setPhotoPreview(photoPreviewRef.current);
+    } catch {
+      toast.error(copy.members.photoInvalid);
+    }
   }
   function closeCamera() {
     cameraStream.current?.getTracks().forEach((track) => track.stop());
@@ -114,7 +120,7 @@ export function CreateMemberForm({
       toast.error(copy.members.cameraUnavailable);
       return;
     }
-    selectPhoto(new File([blob], 'member-photo.jpg', { type: 'image/jpeg' }));
+    await selectPhoto(new File([blob], 'member-photo.jpg', { type: 'image/jpeg' }));
     closeCamera();
   }
   const form = useForm<CreateMemberInput>({
@@ -221,7 +227,7 @@ export function CreateMemberForm({
                     className="hidden"
                     aria-label={copy.members.takePhoto}
                     onChange={(event) => {
-                      selectPhoto(event.target.files?.[0]);
+                      void selectPhoto(event.target.files?.[0]);
                       event.target.value = '';
                     }}
                   />
@@ -232,7 +238,7 @@ export function CreateMemberForm({
                     className="hidden"
                     aria-label={copy.members.choosePhoto}
                     onChange={(event) => {
-                      selectPhoto(event.target.files?.[0]);
+                      void selectPhoto(event.target.files?.[0]);
                       event.target.value = '';
                     }}
                   />

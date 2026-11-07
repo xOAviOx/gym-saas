@@ -1,0 +1,29 @@
+name: Production uptime
+
+on:
+  schedule:
+    # Hourly checks stay comfortably inside the GitHub Actions free allowance.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-uptime
+  cancel-in-progress: true
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+    steps:
+      - name: Check the public liveness endpoint
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          : "${PRODUCTION_URL:?Add the PRODUCTION_URL repository secret}"
+          response="$(curl --fail --silent --show-error --max-time 20 "${PRODUCTION_URL%/}/api/health")"
+          jq -e '.status == "ok"' <<<"${response}" >/dev/null

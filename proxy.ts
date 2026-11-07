@@ -9,6 +9,6 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Everything except static assets, the service worker and machine-to-machine routes.
-    '/((?!_next/static|_next/image|favicon.ico|icon.svg|icons/|manifest.webmanifest|sw.js|api/webhooks|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|icon.svg|icons/|manifest.webmanifest|robots.txt|sw.js|api/health|api/webhooks|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)',
   ],
 };

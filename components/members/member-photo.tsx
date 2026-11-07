@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { saveMemberPhoto } from '@/features/members/actions';
 import { copy } from '@/lib/copy';
+import { prepareMemberPhoto } from '@/lib/images/member-photo';
 
 export function MemberPhoto({
   memberId,
@@ -40,9 +41,16 @@ export function MemberPhoto({
       toast.error(copy.members.photoInvalid);
       return;
     }
+    let prepared: File;
+    try {
+      prepared = await prepareMemberPhoto(file);
+    } catch {
+      toast.error(copy.members.photoInvalid);
+      return;
+    }
     const data = new FormData();
     data.set('memberId', memberId);
-    data.set('photo', file);
+    data.set('photo', prepared);
     setPending(true);
     try {
       if (applyActionResult(await saveMemberPhoto(data))) {

@@ -422,7 +422,7 @@ export const copy = {
       'Member added, but the photo could not be saved. Add it from their profile.',
     uploadPhoto: 'Upload photo',
     removePhoto: 'Remove photo',
-    photoHelp: 'JPG, PNG or WebP, up to 5 MB. Stored privately.',
+    photoHelp: 'JPG, PNG or WebP, up to 5 MB. Large photos are reduced and stored privately.',
     photoInvalid: 'Choose a JPG, PNG or WebP image up to 5 MB.',
     photoSaved: 'Photo updated.',
     photoRemoveHelp: 'Remove this private photo; you will need to upload it again to restore it.',

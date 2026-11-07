@@ -7,7 +7,7 @@ India-first gym management for owners, managers and staff: members and membershi
 - Next.js 16 (App Router, Server Components, Server Actions), TypeScript strict
 - Tailwind CSS v4, shadcn/ui, Phosphor icons (`components/icons.tsx`), Geist with tabular numbers and Instrument Serif headings
 - Supabase (Postgres, Auth, Storage) with row-level security; all multi-step writes are SQL functions called over RPC
-- Vercel (Mumbai) with Vercel Cron for nightly maintenance and 10:00 IST reminders
+- Docker + Caddy on an Oracle Always Free VM, with GitHub Actions for maintenance, monitoring and encrypted backups
 - react-hook-form + zod (the same schemas validate on the client and the server)
 - Vitest (unit + RLS isolation), Playwright (smoke flows), GitHub Actions
 
@@ -63,6 +63,10 @@ docs/                setup and architecture notes
 ## Environment variables
 
 See `.env.example`. Every variable is validated at boot (`lib/env.ts`); the app refuses to start with a missing or malformed value.
+
+## Zero-cost production pilot
+
+The repository includes a Docker/Caddy deployment, health monitoring, scheduled maintenance and encrypted Supabase backups for a ₹0 first-client stack. Follow [docs/free-production.md](docs/free-production.md). Free providers do not include an uptime SLA, so complete its restore and real-device release gates before using real member data.
 
 ## Milestones
 

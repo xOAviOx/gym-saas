@@ -44,6 +44,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Produce a minimal Node server that can run in the production container
+  // without shipping the complete source tree or development dependencies.
+  output: 'standalone',
   reactStrictMode: true,
   poweredByHeader: false,
   // Pin the workspace root so a pnpm-workspace.yaml in a parent folder is never picked up.

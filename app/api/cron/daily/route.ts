@@ -13,7 +13,7 @@ function reply(status: number, body: Record<string, unknown>) {
 }
 
 /**
- * Daily job, called by Vercel Cron at 04:30 UTC (10:00 IST). Statuses are
+ * Daily job, called by the production scheduler at 04:30 UTC (10:00 IST). Statuses are
  * refreshed first so reminders see today's expiries. Every step is safe to
  * repeat, so a retried or manual run does no harm.
  */

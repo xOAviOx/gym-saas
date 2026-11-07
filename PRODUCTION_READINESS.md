@@ -1,30 +1,31 @@
 # GymDesk productionisation plan
 
-Updated 7 November 2026.
+Updated 8 November 2026.
 
 GymDesk is a feature-complete MVP after M6. The remaining work is production hardening, hosted integration testing, device validation, operations, legal readiness and commercial packaging.
 
-## Does productionising cost money?
+## Zero-cost pilot path
 
-Yes, once GymDesk is used by real gyms. Local development and a private demo can continue at effectively zero additional infrastructure cost. A client-facing deployment normally has recurring hosting, database, domain, email, messaging and payment-provider costs.
+GymDesk can start at ₹0 per month for a small controlled pilot by using the repository's Oracle Always Free, Supabase Free, DuckDNS, Caddy, R2 and GitHub Actions deployment. Follow [docs/free-production.md](docs/free-production.md) for the exact setup, quotas, backup procedure and release gate. This is a zero-cash stack, not a free uptime or support SLA.
 
 ### Practical cost paths
 
-| Stage            |                               Expected recurring cost | What it is suitable for                     |
-| ---------------- | ----------------------------------------------------: | ------------------------------------------- |
-| Local/demo       |                                     $0 infrastructure | Development and private demos only          |
-| Staging          |                      Often $0–$25/month plus a domain | Testing with fake or non-sensitive data     |
-| First paid pilot | About $45/month baseline plus domain, email and usage | One or a few real gyms                      |
-| Growing SaaS     |                  Usage-based and support costs on top | Multiple paying gyms and production traffic |
+| Stage             |                  Expected recurring cost | What it is suitable for                                      |
+| ----------------- | ---------------------------------------: | ------------------------------------------------------------ |
+| Local/demo        |                        $0 infrastructure | Development and private demos only                           |
+| Staging           |         Often $0–$25/month plus a domain | Testing with fake or non-sensitive data                      |
+| First small pilot | ₹0 while inside every provider allowance | One or a few real gyms with monitoring and encrypted backups |
+| Growing SaaS      |     Usage-based and support costs on top | Multiple paying gyms and production traffic                  |
 
-The first paid-pilot baseline assumes Vercel Pro at $20/month and Supabase Pro from $25/month. Vercel describes Hobby as a personal-project plan and Pro as the plan for professional applications; Supabase Free can pause inactive projects and does not include automatic backups, while Pro starts at $25/month with daily backups. Confirm current pricing and taxes before purchasing.
+The zero-cost path uses free services with explicit limits. Supabase Free can pause inactive projects and has no automatic backups, which is why this repository adds encrypted daily R2 backups. Oracle Always Free capacity is not guaranteed and idle VMs may be reclaimed. Upgrade when the capacity guardrails in the free-production guide are reached or clients require an SLA.
 
 Cashfree and WhatsApp add variable costs. Cashfree pricing depends on payment method, offer, contract and transaction volume; gateway charges are taken from payments rather than being a fixed GymDesk hosting bill. WhatsApp Business Platform messages outside the customer-service window use approved templates and are subject to Meta's current pricing. Domain registration, transactional email, monitoring, support and legal/accounting work are separate costs.
 
 Official pricing and policy pages:
 
-- [Vercel pricing](https://vercel.com/pricing)
+- [Oracle Always Free](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
 - [Supabase pricing](https://supabase.com/pricing)
+- [Cloudflare R2 pricing](https://developers.cloudflare.com/r2/pricing/)
 - [Cashfree payment gateway charges](https://www.cashfree.com/payment-gateway-charges/)
 - [WhatsApp Business messaging policy](https://business.whatsapp.com/policy/preview)
 
@@ -60,12 +61,12 @@ Do not connect production credentials or real member data until the hosted envir
 
 ### 2. Create separate environments
 
-- [ ] Create a hosted Supabase project for staging.
-- [ ] Create a separate hosted Supabase project for production.
-- [ ] Create separate Vercel projects or environments for staging and production.
+- [ ] Use the local Supabase stack for staging while the zero-cost constraint applies.
+- [ ] Create one hosted Supabase Free project for production.
+- [ ] Create the Oracle Always Free VM and keep staging local until a paid reliability tier is justified.
 - [ ] Use different values for `PORTAL_TOKEN_SECRET`, `SECRETS_ENCRYPTION_KEY` and `CRON_SECRET` in every environment.
-- [ ] Never copy `.env.local` into GitHub, Vercel logs, screenshots or support tickets.
-- [ ] Record who can access Supabase, Vercel, GitHub, Cashfree, Meta and the domain registrar.
+- [ ] Never copy `.env.local` into GitHub, deployment logs, screenshots or support tickets.
+- [ ] Record who can access Oracle, Supabase, Cloudflare, GitHub, Cashfree, Meta and DuckDNS.
 
 ### 3. Deploy the database safely
 
@@ -96,7 +97,7 @@ Then:
 - [ ] Confirm auth redirect URLs in Supabase match the production and staging origins.
 - [ ] Confirm the CSP, HSTS and camera Permissions-Policy are correct on HTTPS.
 - [ ] Confirm `/manifest.webmanifest`, `/sw.js`, `/offline` and the install icons work.
-- [ ] Confirm the Vercel cron invokes `/api/cron/daily` at 10:00 IST with `CRON_SECRET`.
+- [ ] Confirm the GitHub Actions production cron invokes `/api/cron/daily` at 10:00 IST with `CRON_SECRET`.
 - [ ] Confirm error logs do not print tokens, credentials, member phone numbers or payment secrets.
 
 ### 5. Configure authentication and access
@@ -158,7 +159,7 @@ Then:
 
 - [ ] Add error monitoring with alerts for 5xx responses, failed cron jobs, failed webhooks and message delivery failures.
 - [ ] Add uptime checks for the app, Supabase API, cron endpoint and webhook endpoint.
-- [ ] Set usage alerts for Vercel, Supabase storage/egress, WhatsApp and Cashfree.
+- [ ] Review Oracle, Supabase, R2, GitHub Actions, WhatsApp and Cashfree usage against the documented guardrails.
 - [ ] Define daily backup verification and a monthly restore rehearsal.
 - [ ] Define incident severity, who is paged, client communication and recovery steps.
 - [ ] Keep an audit trail for organization settings, team access, payments, expenses, deletes and portal links.
@@ -202,4 +203,4 @@ Do not call GymDesk production-ready until all of these are true:
 
 ## Current status
 
-The code is pushed in commit `d883741`. Local checks pass: lint, typecheck, unit tests, RLS tests, Playwright tests, formatting and production build. The remaining work is the checklist above, with public deployment, live provider tests, real-device validation, legal/operational controls and commercial billing as the largest gaps.
+The repository contains the zero-cost deployment, health endpoint, scheduled maintenance, hourly uptime checks, encrypted off-site backup workflow and client-side photo reduction. The remaining work needs real accounts or people: provision the services, deploy, perform a restore rehearsal, test real devices and live providers, publish legal/support material and complete a controlled pilot.
